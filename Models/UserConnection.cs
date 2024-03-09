@@ -1,7 +1,7 @@
-﻿namespace RESTfulAPI;
+﻿namespace Models;
 
 public class UserConnection
 {
-    public string Name { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
     public string ChatRoom { get; set; } = string.Empty;
 }

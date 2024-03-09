@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using RESTfulAPI;
+using RESTfulAPI.Gateways;
 
 namespace MauiBlazor.Services;
 

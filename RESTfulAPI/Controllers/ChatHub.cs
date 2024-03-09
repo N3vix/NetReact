@@ -1,28 +1,37 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Models;
+using RESTfulAPI.Gateways;
 
 namespace RESTfulAPI.Controllers;
 
 public sealed class ChatHub : Hub
 {
-    public async Task JoinChat(UserConnection connection)
+    private IMessagesGateway MessagesGateway { get; }
+
+    public ChatHub(IMessagesGateway messagesGateway)
     {
-        await Clients.All
-            .SendAsync("ReceiveMessage", "admin", $"{connection.Name} has joined");
+        MessagesGateway = messagesGateway;
     }
 
-    public async Task JoinSpecificChat(UserConnection connection)
+
+    public async Task JoinSpecificChat(UserConnection conn)
     {
         await Groups
-            .AddToGroupAsync(Context.ConnectionId, connection.ChatRoom);
+            .AddToGroupAsync(Context.ConnectionId, conn.ChatRoom);
+
+        MessagesGateway.Connections[Context.ConnectionId] = conn;
+
         await Clients
-            .Group(connection.ChatRoom)
-            .SendAsync("ReceiveMessage", "admin", $"{connection.Name} has joined");
+            .Group(conn.ChatRoom)
+            .SendAsync("JoinSpecificChat", conn.Username, $"{conn.Username} has joined");
     }
 
-    public async Task SendMessage(string message)
+    public async Task SendMessage(string msg)
     {
-        await Clients.All.SendAsync(
-            $"{Context.User.Identity.Name} : {message}",
-            CancellationToken.None);
+        if (!MessagesGateway.Connections.TryGetValue(Context.ConnectionId, out var conn))
+            return;
+        await Clients
+            .Group(conn.ChatRoom)
+            .SendAsync("ReceiveSpecificMessage", conn.Username, msg);
     }
 }

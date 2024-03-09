@@ -1,6 +1,6 @@
 ﻿using Models;
 
-namespace RESTfulAPI;
+namespace RESTfulAPI.Gateways;
 
 public interface IServersGateway
 {

@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RESTfulAPI;
 using RESTfulAPI.Controllers;
+using RESTfulAPI.Gateways;
 using RESTfulAPI.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
@@ -19,7 +21,49 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSignalR();
-builder.Services.AddAuthentication().AddJwtBearer(x =>
+builder.Services.AddAuthentication().AddJwtBearer(ConfigureJwtBearer);
+builder.Services.AddAuthorization();
+builder.Services.AddDbContext<ServersContext>(ConfigureApplicationContextOptions);
+builder.Services.AddDbContext<ChannelsContext>(ConfigureApplicationContextOptions);
+builder.Services.AddScoped<IServersGateway, ServersGateway>();
+builder.Services.AddSingleton<IMessagesGateway, MessagesGateway>();
+
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("reactApp", builder =>
+    {
+        builder
+        .WithOrigins("http://localhost:3000")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+//app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+app.UseCors("reactApp");
+
+app.MapHub<ChatHub>("/chat");
+
+app.Run();
+
+void ConfigureJwtBearer(JwtBearerOptions x)
 {
     x.TokenValidationParameters = new TokenValidationParameters
     {
@@ -46,33 +90,7 @@ builder.Services.AddAuthentication().AddJwtBearer(x =>
             return Task.CompletedTask;
         }
     };
-});
-builder.Services.AddAuthorization();
-
-builder.Services.AddDbContext<ServersContext>(ConfigureApplicationContextOptions);
-builder.Services.AddDbContext<ChannelsContext>(ConfigureApplicationContextOptions);
-builder.Services.AddScoped<IServersGateway, ServersGateway>();
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
-
-app.MapHub<ChatHub>("/chat");
-
-app.Run();
 
 void ConfigureApplicationContextOptions(DbContextOptionsBuilder options)
 {

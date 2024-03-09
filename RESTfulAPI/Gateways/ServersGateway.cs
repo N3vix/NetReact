@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Models;
 
-namespace RESTfulAPI;
+namespace RESTfulAPI.Gateways;
 
 public class ServersGateway : IServersGateway
 {
@@ -34,14 +34,14 @@ public class ServersGateway : IServersGateway
 
     public async Task<ServerDetails> GetByServerId(string id)
     {
-        ArgumentNullException.ThrowIfNullOrEmpty(id);
+        ArgumentException.ThrowIfNullOrEmpty(id);
 
         return await ServersContext.ServersDetails.FirstOrDefaultAsync(x => x.ServerId.Equals(id));
     }
 
     public async Task Edit(string id, Action<ServerDetails> editor)
     {
-        ArgumentNullException.ThrowIfNullOrEmpty(id);
+        ArgumentException.ThrowIfNullOrEmpty(id);
         ArgumentNullException.ThrowIfNull(editor);
 
         var details = await GetByServerId(id);
