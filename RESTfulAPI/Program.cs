@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RESTfulAPI;
+using RESTfulAPI.Configurations;
 using RESTfulAPI.Controllers;
 using RESTfulAPI.Gateways;
 using RESTfulAPI.Swagger;
@@ -15,16 +16,24 @@ var config = builder.Configuration;
 
 // Add coservices to the container.
 
+builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Authentication:Schemes:Bearer"));
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSignalR();
-builder.Services.AddAuthentication().AddJwtBearer(ConfigureJwtBearer);
+
+builder.Services
+    .AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddEntityFrameworkStores<ApplicationContext>();
+builder.Services
+    .AddAuthentication(ConfigureAuthentication)
+    .AddJwtBearer(ConfigureJwtBearer);
 builder.Services.AddAuthorization();
-builder.Services.AddDbContext<ServersContext>(ConfigureApplicationContextOptions);
-builder.Services.AddDbContext<ChannelsContext>(ConfigureApplicationContextOptions);
+
+builder.Services.AddDbContext<ApplicationContext>(ConfigureApplicationContextOptions);
 builder.Services.AddScoped<IServersGateway, ServersGateway>();
 builder.Services.AddSingleton<IMessagesGateway, MessagesGateway>();
 
@@ -63,8 +72,16 @@ app.MapHub<ChatHub>("/chat");
 
 app.Run();
 
+void ConfigureAuthentication(Microsoft.AspNetCore.Authentication.AuthenticationOptions options)
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}
+
 void ConfigureJwtBearer(JwtBearerOptions x)
 {
+    x.SaveToken = true;
     x.TokenValidationParameters = new TokenValidationParameters
     {
         ValidIssuer = config["Authentication:Schemes:Bearer:ValidIssuer"],
@@ -83,7 +100,7 @@ void ConfigureJwtBearer(JwtBearerOptions x)
             var accessToken = context.Request.Query["access_token"];
             var path = context.HttpContext.Request.Path;
             if (!string.IsNullOrEmpty(accessToken)
-                && path.StartsWithSegments("/chat-hub"))
+                && path.StartsWithSegments("/chat"))
             {
                 context.Token = accessToken;
             }

@@ -5,14 +5,17 @@ import WaitingRoom from './components/waitingroom';
 import { useState } from 'react';
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import ChatRoom from './components/chatroom';
+import LoginSignup from './components/loginsignup';
 
 function App() {
+  const token = localStorage.getItem('accessToken');
+
   const [conn, setConnection] = useState();
   const [messages, setMessages] = useState([]);
   const joinChatRoom = async (username, chatroom) => {
     try {
       const conn = new HubConnectionBuilder()
-        .withUrl("https://localhost:7153/chat")
+        .withUrl("https://localhost:7153/chat?access_token=${token}")
         .configureLogging(LogLevel.Information)
         .build();
       conn.on("JoinSpecificChat", (username, msg) => {
@@ -41,23 +44,26 @@ function App() {
     }
   }
 
+  if (!token) {
+    return <LoginSignup />
+  }
 
   return (
     <div>
-      <main>
-        <Container>
+    <main>
+      <Container>
           <Row className='px-5 my-5'>
             <Col sm='12'>
               <h1 className='font-weight-light'>Welcome to the Chat App</h1>
             </Col>
           </Row>
-          {!conn
-            ? <WaitingRoom joinChatRoom={joinChatRoom}></WaitingRoom>
-            : <ChatRoom messages={messages} sendMessage={sendMessage}></ChatRoom>
-          }
-        </Container>
-      </main>
-    </div>
+        {!conn
+          ? <WaitingRoom joinChatRoom={joinChatRoom}></WaitingRoom>
+          : <ChatRoom messages={messages} sendMessage={sendMessage}></ChatRoom>
+        }
+      </Container>
+    </main>
+  </div>
   );
 }
 

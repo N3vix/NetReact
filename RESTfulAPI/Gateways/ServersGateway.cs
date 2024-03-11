@@ -5,38 +5,38 @@ namespace RESTfulAPI.Gateways;
 
 public class ServersGateway : IServersGateway
 {
-    private ServersContext ServersContext { get; }
+    private ApplicationContext ApplicationContext { get; }
 
-    public ServersGateway(ServersContext serversContext)
+    public ServersGateway(ApplicationContext serversContext)
     {
-        ServersContext = serversContext ?? throw new ArgumentNullException(nameof(serversContext));
+        ApplicationContext = serversContext ?? throw new ArgumentNullException(nameof(serversContext));
     }
 
     public async Task Add(params ServerDetails[] serverDetails)
     {
         ArgumentNullException.ThrowIfNull(serverDetails);
 
-        await ServersContext.ServersDetails.AddRangeAsync(serverDetails);
-        await ServersContext.SaveChangesAsync();
+        await ApplicationContext.ServersDetails.AddRangeAsync(serverDetails);
+        await ApplicationContext.SaveChangesAsync();
     }
 
     public async Task<ServerDetails[]> GetAll()
     {
-        return await ServersContext.ServersDetails.ToArrayAsync();
+        return await ApplicationContext.ServersDetails.ToArrayAsync();
     }
 
     public async Task<ServerDetails[]> GetByServerId(string[] ids)
     {
         ArgumentNullException.ThrowIfNull(ids);
 
-        return await ServersContext.ServersDetails.Where(x => ids.Contains(x.ServerId)).ToArrayAsync();
+        return await ApplicationContext.ServersDetails.Where(x => ids.Contains(x.ServerId)).ToArrayAsync();
     }
 
     public async Task<ServerDetails> GetByServerId(string id)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
 
-        return await ServersContext.ServersDetails.FirstOrDefaultAsync(x => x.ServerId.Equals(id));
+        return await ApplicationContext.ServersDetails.FirstOrDefaultAsync(x => x.ServerId.Equals(id));
     }
 
     public async Task Edit(string id, Action<ServerDetails> editor)
@@ -47,6 +47,6 @@ public class ServersGateway : IServersGateway
         var details = await GetByServerId(id);
         if (details == null) return;
         editor(details);
-        await ServersContext.SaveChangesAsync();
+        await ApplicationContext.SaveChangesAsync();
     }
 }

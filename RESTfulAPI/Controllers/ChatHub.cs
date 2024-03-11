@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using Models;
 using RESTfulAPI.Gateways;
 
 namespace RESTfulAPI.Controllers;
 
+[Authorize()]
 public sealed class ChatHub : Hub
 {
     private IMessagesGateway MessagesGateway { get; }
@@ -12,7 +14,6 @@ public sealed class ChatHub : Hub
     {
         MessagesGateway = messagesGateway;
     }
-
 
     public async Task JoinSpecificChat(UserConnection conn)
     {

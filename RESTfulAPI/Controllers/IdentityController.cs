@@ -3,7 +3,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Json;
 
 namespace RESTfulAPI.Controllers;
 
@@ -37,18 +36,16 @@ public class IdentityController : ControllerBase
         var issuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(Configuration["Authentication:Schemes:Bearer:ValidKey"]));
 
-        var claims = new List<Claim>
-        {
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(JwtRegisteredClaimNames.Sub, request.Email),
-            new(JwtRegisteredClaimNames.Email, request.Email),
-            new("userid", request.UserId.ToString()),
-            new("role", request.Role),
-        };
-
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(claims),
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(JwtRegisteredClaimNames.Sub, request.Email),
+                new(JwtRegisteredClaimNames.Email, request.Email),
+                new("userid", request.UserId.ToString()),
+                new("role", request.Role)
+            }),
             Expires = DateTime.UtcNow.Add(TokenLifeTime),
             Issuer = validIssuer,
             SigningCredentials = new SigningCredentials(issuerSigningKey, SecurityAlgorithms.HmacSha256),
