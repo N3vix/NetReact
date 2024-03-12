@@ -82,7 +82,13 @@ void ConfigureAuthentication(Microsoft.AspNetCore.Authentication.AuthenticationO
 void ConfigureJwtBearer(JwtBearerOptions x)
 {
     x.SaveToken = true;
-    x.TokenValidationParameters = new TokenValidationParameters
+    x.TokenValidationParameters = GetTokenValidationParameters();
+    x.Events = GetJwtBearerEvents();
+}
+
+TokenValidationParameters GetTokenValidationParameters()
+{
+    return new TokenValidationParameters
     {
         ValidIssuer = config["Authentication:Schemes:Bearer:ValidIssuer"],
         ValidAudiences = config.GetSection("Authentication:Schemes:Bearer:ValidAudiences").Get<string[]>(),
@@ -93,23 +99,21 @@ void ConfigureJwtBearer(JwtBearerOptions x)
         ValidateIssuerSigningKey = true,
         ValidateLifetime = true,
     };
-    x.Events = new JwtBearerEvents
+}
+
+JwtBearerEvents GetJwtBearerEvents() => new() { OnMessageReceived = PopulateAccessToken };
+
+Task PopulateAccessToken(MessageReceivedContext messageContext)
+{
+    var accessToken = messageContext.Request.Query["access_token"];
+    var path = messageContext.HttpContext.Request.Path;
+    if (!string.IsNullOrEmpty(accessToken)
+        && path.StartsWithSegments("/chat"))
     {
-        OnMessageReceived = context =>
-        {
-            var accessToken = context.Request.Query["access_token"];
-            var path = context.HttpContext.Request.Path;
-            if (!string.IsNullOrEmpty(accessToken)
-                && path.StartsWithSegments("/chat"))
-            {
-                context.Token = accessToken;
-            }
-            return Task.CompletedTask;
-        }
-    };
+        messageContext.Token = accessToken;
+    }
+    return Task.CompletedTask;
 }
 
 void ConfigureApplicationContextOptions(DbContextOptionsBuilder options)
-{
-    options.UseSqlite(builder.Configuration.GetConnectionString("Database"));
-}
+    => options.UseSqlite(builder.Configuration.GetConnectionString("Database"));

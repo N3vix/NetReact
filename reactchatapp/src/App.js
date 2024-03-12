@@ -1,48 +1,17 @@
-import { Row, Col, Container } from 'react-bootstrap';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'
-import WaitingRoom from './components/waitingroom';
-import { useState } from 'react';
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import ChatRoom from './components/chatroom';
+import { BrowserRouter, Route, Routes, useParams } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
 import LoginSignup from './components/loginsignup';
+import Homepage from './components/homepage';
 
 function App() {
   const token = localStorage.getItem('accessToken');
 
-  const [conn, setConnection] = useState();
-  const [messages, setMessages] = useState([]);
-  const joinChatRoom = async (username, chatroom) => {
-    try {
-      const conn = new HubConnectionBuilder()
-        .withUrl("https://localhost:7153/chat?access_token=${token}")
-        .configureLogging(LogLevel.Information)
-        .build();
-      conn.on("JoinSpecificChat", (username, msg) => {
-        console.log("msg: ", msg)
-        setMessages(messages => [...messages, { username, msg }])
-      });
-
-      conn.on("ReceiveSpecificMessage", (username, msg) => {
-        setMessages(messages => [...messages, { username, msg }])
-      });
-
-      await conn.start();
-      await conn.invoke("JoinSpecificChat", { username, chatroom });
-
-      setConnection(conn);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const sendMessage = async (message) => {
-    try {
-      await conn.invoke("SendMessage", message);
-    } catch (error) {
-      console.log(error)
-    }
-  }
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    window.location.href = "/";
+  };
 
   if (!token) {
     return <LoginSignup />
@@ -50,20 +19,28 @@ function App() {
 
   return (
     <div>
-    <main>
-      <Container>
-          <Row className='px-5 my-5'>
-            <Col sm='12'>
-              <h1 className='font-weight-light'>Welcome to the Chat App</h1>
-            </Col>
-          </Row>
-        {!conn
-          ? <WaitingRoom joinChatRoom={joinChatRoom}></WaitingRoom>
-          : <ChatRoom messages={messages} sendMessage={sendMessage}></ChatRoom>
-        }
-      </Container>
-    </main>
-  </div>
+
+      <Button variant="success" type="button" onClick={handleLogout}>Log out</Button>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" Component={Homepage}>
+            <Route path=":id" Component={Child}/>
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </div>
+  );
+}
+
+const Child = () => {
+  // We can use the `useParams` hook here to access
+  // the dynamic pieces of the URL.
+  let { id } = useParams();
+
+  return (
+    <div>
+      <h3>ID: {id}</h3>
+    </div>
   );
 }
 

@@ -32,6 +32,19 @@ public class ServersGateway : IServersGateway
         return await ApplicationContext.ServersDetails.Where(x => ids.Contains(x.ServerId)).ToArrayAsync();
     }
 
+    public async Task<ServerDetails[]> GetByUserId(string userId)
+    {
+        ArgumentNullException.ThrowIfNull(userId);
+
+        var userServerIds = from serverUser in ApplicationContext.ServerUsers
+                            where serverUser.UserId == userId
+                            select serverUser.ServerId;
+
+        return await (from serverDetails in ApplicationContext.ServersDetails
+                      where userServerIds.Contains(serverDetails.ServerId)
+                      select serverDetails).ToArrayAsync();
+    }
+
     public async Task<ServerDetails> GetByServerId(string id)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);

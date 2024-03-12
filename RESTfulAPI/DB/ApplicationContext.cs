@@ -7,6 +7,7 @@ namespace RESTfulAPI;
 public class ApplicationContext : IdentityDbContext
 {
     public DbSet<ServerDetails> ServersDetails => Set<ServerDetails>();
+    public DbSet<ServerUser> ServerUsers => Set<ServerUser>();
     public DbSet<ChannelDetails> ChannelsDetails => Set<ChannelDetails>();
 
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
@@ -20,7 +21,7 @@ public class ApplicationContext : IdentityDbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<ServerDetails>().ToTable(nameof(ServerDetails));
+        modelBuilder.Entity<ServerUser>().ToTable("ServerUsers");
         modelBuilder.Entity<ChannelDetails>().ToTable(nameof(ChannelDetails));
-        modelBuilder.Entity<ChannelMessage>().ToTable(nameof(ChannelMessage));
     }
 }

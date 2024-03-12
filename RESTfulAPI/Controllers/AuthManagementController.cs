@@ -35,7 +35,7 @@ public class AuthManagementController : ControllerBase
             return BadRequest("Invalid request payload");
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
         if (existingUser != null)
-            return BadRequest(new RegistrationRequestResponse
+            return BadRequest(new UserRegistrationResponse
             {
                 Success = false,
                 Errors = ["User already exist"]
@@ -53,7 +53,7 @@ public class AuthManagementController : ControllerBase
 
         var token = GenerateToken(newUser);
 
-        return Ok(new RegistrationRequestResponse
+        return Ok(new UserRegistrationResponse
         {
             Success = true,
             Token = token
@@ -75,7 +75,7 @@ public class AuthManagementController : ControllerBase
 
         var token = GenerateToken(existingUser);
 
-        return Ok(new LoginRequestResponse
+        return Ok(new UserLoginResponse
         {
             Success = true,
             Token = token

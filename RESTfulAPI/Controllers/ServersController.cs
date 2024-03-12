@@ -20,11 +20,16 @@ public class ServersController : ControllerBase
     }
 
     [HttpGet("[action]")]
-    public async Task<IEnumerable<ServerDetails>> GetServers([FromQuery] string idsCsv = null)
+    public async Task<IEnumerable<ServerDetails>> GetAllServers()
     {
-        if (string.IsNullOrEmpty(idsCsv)) return await ServersGateway.GetAll();
-        var ids = idsCsv.Split(',');
-        return await ServersGateway.GetByServerId(ids);
+        return await ServersGateway.GetAll();
+    }
+
+    [HttpGet("[action]")]
+    public async Task<IEnumerable<ServerDetails>> GetAddedServers()
+    {
+        var userId = User.Claims.First(c => c.Type == "userid").Value;
+        return await ServersGateway.GetByUserId(userId);
     }
 
     [HttpGet("[action]")]

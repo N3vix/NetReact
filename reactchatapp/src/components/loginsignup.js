@@ -71,6 +71,7 @@ const LoginSignup = () => {
             const response = await SignUp();
             if (response.success) {
                 localStorage.setItem('accessToken', response['token']);
+                window.location.href = "/";
                 // localStorage.setItem('user', JSON.stringify(response['user']));
             }
             else {
@@ -80,6 +81,7 @@ const LoginSignup = () => {
             const response = await Login();
             if (response.success) {
                 localStorage.setItem('accessToken', response['token']);
+                window.location.href = "/";
                 // localStorage.setItem('user', JSON.stringify(response['user']));
             }
             else {
