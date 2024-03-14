@@ -1,10 +1,12 @@
-import "./loginsignup.css"
+import { useState } from "react";
+import { Container, Form, Button } from "react-bootstrap";
 
+import "./loginsignup.css"
 import user_icon from "./assets/person.png";
 import email_icon from "./assets/email.png";
 import password_icon from "./assets/password.png";
-import { useState } from "react";
-import { Container, Form, Button } from "react-bootstrap";
+import "./homepage.css"
+import { BACKEND_BASE_URL, USER_TOKEN_KEY } from '../constants'
 
 const LoginSignup = () => {
 
@@ -70,7 +72,7 @@ const LoginSignup = () => {
         if (action === signUpActionName) {
             const response = await SignUp();
             if (response.success) {
-                localStorage.setItem('accessToken', response['token']);
+                localStorage.setItem(USER_TOKEN_KEY, response['token']);
                 window.location.href = "/";
                 // localStorage.setItem('user', JSON.stringify(response['user']));
             }
@@ -80,7 +82,7 @@ const LoginSignup = () => {
         } else {
             const response = await Login();
             if (response.success) {
-                localStorage.setItem('accessToken', response['token']);
+                localStorage.setItem(USER_TOKEN_KEY, response['token']);
                 window.location.href = "/";
                 // localStorage.setItem('user', JSON.stringify(response['user']));
             }
@@ -91,7 +93,7 @@ const LoginSignup = () => {
     }
 
     async function SignUp() {
-        return fetch("https://localhost:7153/AuthManagement/Register", {
+        return fetch(BACKEND_BASE_URL + "/AuthManagement/Register", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -101,7 +103,7 @@ const LoginSignup = () => {
     }
 
     async function Login() {
-        return fetch("https://localhost:7153/AuthManagement/Login", {
+        return fetch(BACKEND_BASE_URL + "/AuthManagement/Login", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'

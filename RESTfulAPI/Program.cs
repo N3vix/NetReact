@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using RESTfulAPI;
 using RESTfulAPI.Configurations;
 using RESTfulAPI.Controllers;
@@ -12,32 +14,35 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
 var config = builder.Configuration;
 
 // Add coservices to the container.
 
-builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("Authentication:Schemes:Bearer"));
+services.Configure<JwtConfig>(builder.Configuration.GetSection("Authentication:Schemes:Bearer"));
 
-builder.Services.AddControllers();
+services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-builder.Services.AddSignalR();
+services.AddEndpointsApiExplorer();
+services.AddSwaggerGen();
+services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+services.AddSignalR();
 
-builder.Services
+services
     .AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationContext>();
-builder.Services
+services
     .AddAuthentication(ConfigureAuthentication)
     .AddJwtBearer(ConfigureJwtBearer);
-builder.Services.AddAuthorization();
+services.AddAuthorization();
 
-builder.Services.AddDbContext<ApplicationContext>(ConfigureApplicationContextOptions);
-builder.Services.AddScoped<IServersGateway, ServersGateway>();
-builder.Services.AddSingleton<IMessagesGateway, MessagesGateway>();
+services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(config.GetConnectionString("MongoDB")));
+services.AddDbContext<ApplicationContext>(ConfigureApplicationContextOptions);
+//services.AddScoped<IServersGateway, ServersGateway>();
+services.AddScoped<IServersGateway, ServersGatewayMongoDB>();
+services.AddSingleton<IMessagesGateway, MessagesGateway>();
 
-builder.Services.AddCors(opt =>
+services.AddCors(opt =>
 {
     opt.AddPolicy("reactApp", builder =>
     {

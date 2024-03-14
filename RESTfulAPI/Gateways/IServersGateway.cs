@@ -4,10 +4,11 @@ namespace RESTfulAPI.Gateways;
 
 public interface IServersGateway
 {
+    Task<string> Add(ServerDetails serverDetails);
     Task Add(params ServerDetails[] serverDetails);
-    Task Edit(string id, Action<ServerDetails> editor);
-    Task<ServerDetails[]> GetAll();
-    Task<ServerDetails[]> GetByServerId(string[] ids);
-    Task<ServerDetails[]> GetByUserId(string userId);
-    Task<ServerDetails> GetByServerId(string id);
+    Task<IEnumerable<ServerDetails>> Get();
+    Task<ServerDetails> GetById(string id);
+    Task<IEnumerable<ServerDetails>> GetByUserId(string userId);
+    Task<bool> Edit(string id, ServerDetails serverDetails);
+    Task<bool> Delete(string id);
 }

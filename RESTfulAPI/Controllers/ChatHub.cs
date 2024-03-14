@@ -17,22 +17,27 @@ public sealed class ChatHub : Hub
 
     public async Task JoinSpecificChat(UserConnection conn)
     {
+        var userId = Context.User.Claims.First(c => c.Type == "userid").Value;
+
         await Groups
             .AddToGroupAsync(Context.ConnectionId, conn.ChatRoom);
 
         MessagesGateway.Connections[Context.ConnectionId] = conn;
 
         await Clients
-            .Group(conn.ChatRoom)
-            .SendAsync("JoinSpecificChat", conn.Username, $"{conn.Username} has joined");
+            .Group($"{conn.ServerId}{conn.ChatRoom}")
+            .SendAsync("JoinSpecificChat", userId, $"{userId} has joined");
     }
 
     public async Task SendMessage(string msg)
     {
         if (!MessagesGateway.Connections.TryGetValue(Context.ConnectionId, out var conn))
             return;
+
+        var userId = Context.User.Claims.First(c => c.Type == "userid").Value;
+
         await Clients
-            .Group(conn.ChatRoom)
-            .SendAsync("ReceiveSpecificMessage", conn.Username, msg);
+            .Group($"{conn.ServerId}{conn.ChatRoom}")
+            .SendAsync("ReceiveSpecificMessage", userId, msg);
     }
 }

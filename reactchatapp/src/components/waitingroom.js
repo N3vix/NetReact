@@ -3,21 +3,19 @@ import { Button, Col, Form, Row } from "react-bootstrap";
 
 const WaitingRoom = ({ joinChatRoom }) => {
 
-    const [username, setUsername] = useState();
     const [chatroom, setChatroom] = useState();
 
+// joinChatRoom("57");
+
+// return ""
     return <Form onSubmit={e => {
         e.preventDefault();
-        joinChatRoom(username, chatroom)
+        joinChatRoom(chatroom)
     }}>
 
         <Row className="px-5 py-5">
             <Col sm={12}>
                 <Form.Group>
-                    <Form.Control
-                        placeholder="Username"
-                        onChange={e => setUsername(e.target.value)} />
-
                     <Form.Control
                         placeholder="Chatroom"
                         onChange={e => setChatroom(e.target.value)} />

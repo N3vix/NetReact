@@ -22,7 +22,7 @@ public class ServersController : ControllerBase
     [HttpGet("[action]")]
     public async Task<IEnumerable<ServerDetails>> GetAllServers()
     {
-        return await ServersGateway.GetAll();
+        return await ServersGateway.Get();
     }
 
     [HttpGet("[action]")]
@@ -35,6 +35,6 @@ public class ServersController : ControllerBase
     [HttpGet("[action]")]
     public async Task<ServerDetails> GetServer([FromQuery] string id)
     {
-        return await ServersGateway.GetByServerId(id);
+        return await ServersGateway.GetById(id);
     }
 }

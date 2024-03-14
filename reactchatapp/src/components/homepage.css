@@ -1,5 +1,18 @@
-.nav-scrollable{
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+}
+
+main {
+    flex: 1;
+}
+
+.sidebar {
     background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+}
+
+.nav-scrollable {
     width: 100px;
     position: sticky;
     top: 0;

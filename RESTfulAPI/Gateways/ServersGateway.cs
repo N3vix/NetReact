@@ -12,6 +12,15 @@ public class ServersGateway : IServersGateway
         ApplicationContext = serversContext ?? throw new ArgumentNullException(nameof(serversContext));
     }
 
+    public async Task<string> Add(ServerDetails serverDetails)
+    {
+        ArgumentNullException.ThrowIfNull(serverDetails);
+
+        await ApplicationContext.ServersDetails.AddAsync(serverDetails);
+        await ApplicationContext.SaveChangesAsync();
+        return serverDetails.Id.ToString();
+    }
+
     public async Task Add(params ServerDetails[] serverDetails)
     {
         ArgumentNullException.ThrowIfNull(serverDetails);
@@ -20,19 +29,19 @@ public class ServersGateway : IServersGateway
         await ApplicationContext.SaveChangesAsync();
     }
 
-    public async Task<ServerDetails[]> GetAll()
+    public async Task<IEnumerable<ServerDetails>> Get()
     {
         return await ApplicationContext.ServersDetails.ToArrayAsync();
     }
 
-    public async Task<ServerDetails[]> GetByServerId(string[] ids)
+    public async Task<ServerDetails> GetById(string id)
     {
-        ArgumentNullException.ThrowIfNull(ids);
+        ArgumentException.ThrowIfNullOrEmpty(id);
 
-        return await ApplicationContext.ServersDetails.Where(x => ids.Contains(x.ServerId)).ToArrayAsync();
+        return await ApplicationContext.ServersDetails.FirstOrDefaultAsync(x => x.Id.Equals(id));
     }
 
-    public async Task<ServerDetails[]> GetByUserId(string userId)
+    public async Task<IEnumerable<ServerDetails>> GetByUserId(string userId)
     {
         ArgumentNullException.ThrowIfNull(userId);
 
@@ -41,25 +50,25 @@ public class ServersGateway : IServersGateway
                             select serverUser.ServerId;
 
         return await (from serverDetails in ApplicationContext.ServersDetails
-                      where userServerIds.Contains(serverDetails.ServerId)
+                      where userServerIds.Contains(serverDetails.Id)
                       select serverDetails).ToArrayAsync();
     }
 
-    public async Task<ServerDetails> GetByServerId(string id)
+    public async Task<bool> Edit(string id, ServerDetails serverDetails)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
+        ArgumentNullException.ThrowIfNull(serverDetails);
 
-        return await ApplicationContext.ServersDetails.FirstOrDefaultAsync(x => x.ServerId.Equals(id));
+        var details = await GetById(id);
+        if (details == null) return false;
+        details.Name = serverDetails.Name;
+
+        await ApplicationContext.SaveChangesAsync();
+        return true;
     }
 
-    public async Task Edit(string id, Action<ServerDetails> editor)
+    public Task<bool> Delete(string id)
     {
-        ArgumentException.ThrowIfNullOrEmpty(id);
-        ArgumentNullException.ThrowIfNull(editor);
-
-        var details = await GetByServerId(id);
-        if (details == null) return;
-        editor(details);
-        await ApplicationContext.SaveChangesAsync();
+        throw new NotImplementedException();
     }
 }
