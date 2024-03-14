@@ -1,20 +1,18 @@
 ﻿using Models;
 using MongoDB.Driver;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using RESTfulAPI.DB;
 
 namespace RESTfulAPI.Gateways;
 
 public class ServersGatewayMongoDB : IServersGateway
 {
-    private readonly IMongoCollection<ServerDetails> _servers;
+    private readonly IMongoDbContext _mongoDbContext;
 
-    public ServersGatewayMongoDB(IMongoClient mongoClient)
+    public ServersGatewayMongoDB(IMongoDbContext mongoDbContext)
     {
-        if (mongoClient == null) throw new ArgumentNullException(nameof(mongoClient));
-        var database = mongoClient.GetDatabase("Dd");
-        var collection = database.GetCollection<ServerDetails>(nameof(ServerDetails));
+        ArgumentNullException.ThrowIfNull(mongoDbContext);
 
-        _servers = collection;
+        _mongoDbContext = mongoDbContext;
     }
 
     public async Task<string> Add(ServerDetails serverDetails)
@@ -23,7 +21,7 @@ public class ServersGatewayMongoDB : IServersGateway
 
         serverDetails.Id = Guid.NewGuid().ToString();
 
-        await _servers.InsertOneAsync(serverDetails);
+        await _mongoDbContext.Servers.InsertOneAsync(serverDetails);
 
         return serverDetails.Id;
     }
@@ -40,22 +38,32 @@ public class ServersGatewayMongoDB : IServersGateway
 
     public async Task<IEnumerable<ServerDetails>> Get()
     {
-        var servers = await _servers.Find(_ => true).ToListAsync();
+        var servers = await _mongoDbContext.Servers.Find(_ => true).ToListAsync();
 
         return servers;
     }
 
     public async Task<ServerDetails> GetById(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
+
         var filter = GetIdFilter(id);
-        var servers = await _servers.Find(filter).FirstOrDefaultAsync();
+        var servers = await _mongoDbContext.Servers.Find(filter).FirstOrDefaultAsync();
 
         return servers;
     }
 
     public async Task<IEnumerable<ServerDetails>> GetByUserId(string userId)
     {
-        throw new NotImplementedException();
+        ArgumentException.ThrowIfNullOrEmpty(userId);
+
+        var serverFollowerFilter = Builders<ServerFollower>.Filter.Eq(x => x.UserId, userId);
+        var userServers = await _mongoDbContext.Followers.Find(serverFollowerFilter).ToListAsync();
+
+        var serverDetailsFilter = Builders<ServerDetails>.Filter.In(x => x.Id, userServers.Select(x => x.ServerId));
+        var servers = await _mongoDbContext.Servers.Find(serverDetailsFilter).ToListAsync();
+
+        return servers;
     }
 
     public async Task<bool> Edit(string id, ServerDetails serverDetails)
@@ -66,7 +74,7 @@ public class ServersGatewayMongoDB : IServersGateway
         var filter = GetIdFilter(id);
         var update = Builders<ServerDetails>.Update.Set(x => x.Name, serverDetails.Name);
 
-        var result = await _servers.UpdateOneAsync(filter, update);
+        var result = await _mongoDbContext.Servers.UpdateOneAsync(filter, update);
 
         return result.ModifiedCount == 1;
     }
@@ -76,7 +84,7 @@ public class ServersGatewayMongoDB : IServersGateway
         ArgumentException.ThrowIfNullOrEmpty(id);
 
         var filter = GetIdFilter(id);
-        var result = await _servers.DeleteOneAsync(filter);
+        var result = await _mongoDbContext.Servers.DeleteOneAsync(filter);
 
         return result.DeletedCount == 1;
     }

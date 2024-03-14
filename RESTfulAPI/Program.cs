@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using RESTfulAPI;
 using RESTfulAPI.Configurations;
 using RESTfulAPI.Controllers;
+using RESTfulAPI.DB;
 using RESTfulAPI.Gateways;
 using RESTfulAPI.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -36,11 +38,11 @@ services
     .AddJwtBearer(ConfigureJwtBearer);
 services.AddAuthorization();
 
-services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(config.GetConnectionString("MongoDB")));
+services.AddSingleton<IMongoDbContext, MongoDbContext>(x => new MongoDbContext(config.GetConnectionString("MongoDB")));
+
 services.AddDbContext<ApplicationContext>(ConfigureApplicationContextOptions);
 //services.AddScoped<IServersGateway, ServersGateway>();
 services.AddScoped<IServersGateway, ServersGatewayMongoDB>();
-services.AddSingleton<IMessagesGateway, MessagesGateway>();
 
 services.AddCors(opt =>
 {
