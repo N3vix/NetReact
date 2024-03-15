@@ -13,7 +13,7 @@ main {
 }
 
 .nav-scrollable {
-    width: 100px;
+    width: 150px;
     position: sticky;
     top: 0;
 }

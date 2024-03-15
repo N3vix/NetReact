@@ -5,6 +5,7 @@ import { Button } from 'react-bootstrap';
 import LoginSignup from './components/loginsignup';
 import Homepage from './components/homepage';
 import Server from './components/server';
+import Channel from './components/channel';
 
 function App() {
   const token = localStorage.getItem('accessToken');
@@ -24,7 +25,9 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" Component={Homepage}>
-            <Route path=":id" Component={Server}/>
+            <Route path="/:serverId" Component={Server}>
+              <Route path="/:serverId/:channelId" Component={Channel}/>
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

@@ -41,8 +41,9 @@ services.AddAuthorization();
 services.AddSingleton<IMongoDbContext, MongoDbContext>(x => new MongoDbContext(config.GetConnectionString("MongoDB")));
 
 services.AddDbContext<ApplicationContext>(ConfigureApplicationContextOptions);
-//services.AddScoped<IServersGateway, ServersGateway>();
 services.AddScoped<IServersGateway, ServersGatewayMongoDB>();
+services.AddScoped<IChannelsGateway, ChannelsGatewayMongoDB>();
+services.AddScoped<IChannelMessagesGateway, ChannelMessagesGatewayMongoDb>();
 
 services.AddCors(opt =>
 {

@@ -30,7 +30,7 @@ const Homepage = () => {
 
                     {servers.map((server, index) =>
                         <div className="nav-item px-3">
-                            <Link className="nav-link" key={index} to={server.serverId}>{server.name}</Link>
+                            <Link className="nav-link" key={index} to={server.id}>{server.name}</Link>
                         </div>)}
                 </nav>
             </div>
