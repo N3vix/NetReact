@@ -1,8 +1,8 @@
 ﻿using Models;
 
-namespace RESTfulAPI.Gateways;
+namespace RESTfulAPI.Repositories;
 
-public interface IServersGateway
+public interface IServersRepository
 {
     Task<string> Add(ServerDetails serverDetails);
     Task Add(params ServerDetails[] serverDetails);

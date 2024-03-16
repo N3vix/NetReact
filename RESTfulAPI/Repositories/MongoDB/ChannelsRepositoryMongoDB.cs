@@ -2,13 +2,13 @@
 using MongoDB.Driver;
 using RESTfulAPI.DB;
 
-namespace RESTfulAPI.Gateways;
+namespace RESTfulAPI.Repositories.MongoDB;
 
-public class ChannelsGatewayMongoDB : IChannelsGateway
+public class ChannelsRepositoryMongoDB : IChannelsRepository
 {
     private readonly IMongoDbContext _mongoDbContext;
 
-    public ChannelsGatewayMongoDB(IMongoDbContext mongoDbContext)
+    public ChannelsRepositoryMongoDB(IMongoDbContext mongoDbContext)
     {
         ArgumentNullException.ThrowIfNull(mongoDbContext);
 

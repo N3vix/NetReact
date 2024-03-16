@@ -1,9 +1,9 @@
 ﻿using Models;
 using System.Collections.Concurrent;
 
-namespace RESTfulAPI.Gateways;
+namespace RESTfulAPI.Repositories;
 
-public class MessagesGateway : IMessagesGateway
+public class MessagesRepository : IMessagesRepository
 {
     private ConcurrentDictionary<string, UserConnection> _connections = new();
 

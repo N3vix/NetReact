@@ -1,5 +1,4 @@
-﻿using MauiBlazor.Services;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using RESTfulAPI.Gateways;
@@ -11,32 +10,35 @@ namespace RESTfulAPI.Controllers;
 [Authorize]
 public class ChannelMessagesController : ControllerBase
 {
-    private ILogger<ServersController> Logger { get; }
+    private ILogger<ChannelMessagesController> Logger { get; }
     private IChannelMessagesGateway MessagesGateway { get; }
 
-    public ChannelMessagesController(ILogger<ServersController> logger, IChannelMessagesGateway messagesGateway)
+    public ChannelMessagesController(ILogger<ChannelMessagesController> logger, IChannelMessagesGateway messagesGateway)
     {
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(messagesGateway);
+
         Logger = logger;
         MessagesGateway = messagesGateway;
     }
 
-    [HttpGet("[action]")]
-    public async Task<string> AddMessage([FromBody] ChannelMessageRequest channelMessageRequest)
+    [HttpPost("[action]")]
+    public async Task<string> Add([FromBody] ChannelMessageAddRequest request)
     {
-        var channelMessage = new ChannelMessage
-        {
-            ChannelId = channelMessageRequest.ChannelId,
-            SenderId = User.Claims.First(c => c.Type == "userid").Value,
-            Timestamp = DateTime.UtcNow,
-            Content = channelMessageRequest.Content
-        };
+        var userId = User.Claims.First(c => c.Type == "userid").Value;
 
-        return await MessagesGateway.Add(channelMessage);
+        return await MessagesGateway.Add(userId, request.ChannelId, request.Content);
     }
 
-    [HttpGet("[action]")]
-    public async Task<IEnumerable<ChannelMessage>> GetMessages([FromQuery] string id, [FromQuery] int take)
+    [HttpPost("[action]")]
+    public async Task<IEnumerable<ChannelMessage>> Get([FromBody] ChannelMessageGetRequest request)
     {
-        return await MessagesGateway.GetByChannelId(id, take, 0);
+        return await MessagesGateway.Get(request.ChannelId, request.Take);
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IEnumerable<ChannelMessage>> GetBefore([FromBody] ChannelMessageGetRequest request)
+    {
+        return await MessagesGateway.GetBefore(request.DateTime, request.ChannelId, request.Take);
     }
 }

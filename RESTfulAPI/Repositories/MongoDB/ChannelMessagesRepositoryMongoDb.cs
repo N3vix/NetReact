@@ -1,14 +1,15 @@
 ﻿using Models;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using RESTfulAPI.DB;
 
-namespace RESTfulAPI.Gateways;
+namespace RESTfulAPI.Repositories.MongoDB;
 
-public class ChannelMessagesGatewayMongoDb : IChannelMessagesGateway
+public class ChannelMessagesRepositoryMongoDb : IChannelMessagesRepository
 {
     private readonly IMongoDbContext _mongoDbContext;
 
-    public ChannelMessagesGatewayMongoDb(IMongoDbContext mongoDbContext)
+    public ChannelMessagesRepositoryMongoDb(IMongoDbContext mongoDbContext)
     {
         ArgumentNullException.ThrowIfNull(mongoDbContext);
 
@@ -36,18 +37,31 @@ public class ChannelMessagesGatewayMongoDb : IChannelMessagesGateway
         return message;
     }
 
-    public async Task<IEnumerable<ChannelMessage>> GetByChannelId(string channelId, int take, int skip)
+    public async Task<IEnumerable<ChannelMessage>> Get(string channelId, int take, int skip)
     {
         ArgumentException.ThrowIfNullOrEmpty(channelId);
 
         var filter = Builders<ChannelMessage>.Filter.Eq(x => x.ChannelId, channelId);
         var messages = await _mongoDbContext.ChannelMessages
             .Find(filter)
-            .SortByDescending(x => x.Timestamp)
             .Limit(take)
-            .Skip(skip).ToListAsync();
+            .SortByDescending(x => x.Timestamp).ToListAsync();
 
-        return messages;
+        return messages.OrderBy(x => x.Timestamp);
+    }
+
+    public async Task<IEnumerable<ChannelMessage>> GetBefore(DateTime dateTime, string channelId, int take)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(channelId);
+
+        var filter = Builders<ChannelMessage>.Filter.Eq(x => x.ChannelId, channelId);
+        filter &= Builders<ChannelMessage>.Filter.Lt(x => x.Timestamp, dateTime);
+        var messages = await _mongoDbContext.ChannelMessages
+            .Find(filter)
+            .Limit(take)
+            .SortByDescending(x => x.Timestamp).ToListAsync();
+
+        return messages.OrderBy(x => x.Timestamp);
     }
 
     public async Task<bool> Edit(string id, ChannelMessage message)

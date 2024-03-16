@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Models;
 
-namespace RESTfulAPI;
+namespace RESTfulAPI.DB;
 
 public class ApplicationContext : IdentityDbContext
 {

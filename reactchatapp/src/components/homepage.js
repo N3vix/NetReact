@@ -37,7 +37,7 @@ const Homepage = () => {
         </div>
 
         <main>
-            <article className="content px-4">
+            <article className="content">
                 <Outlet />
             </article>
         </main>

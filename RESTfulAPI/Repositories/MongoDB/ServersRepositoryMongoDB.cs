@@ -2,13 +2,13 @@
 using MongoDB.Driver;
 using RESTfulAPI.DB;
 
-namespace RESTfulAPI.Gateways;
+namespace RESTfulAPI.Repositories.MongoDB;
 
-public class ServersGatewayMongoDB : IServersGateway
+public class ServersRepositoryMongoDB : IServersRepository
 {
     private readonly IMongoDbContext _mongoDbContext;
 
-    public ServersGatewayMongoDB(IMongoDbContext mongoDbContext)
+    public ServersRepositoryMongoDB(IMongoDbContext mongoDbContext)
     {
         ArgumentNullException.ThrowIfNull(mongoDbContext);
 

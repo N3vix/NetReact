@@ -5,12 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver;
-using RESTfulAPI;
 using RESTfulAPI.Configurations;
 using RESTfulAPI.Controllers;
 using RESTfulAPI.DB;
 using RESTfulAPI.Gateways;
+using RESTfulAPI.Repositories;
+using RESTfulAPI.Repositories.MongoDB;
 using RESTfulAPI.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
@@ -41,9 +41,14 @@ services.AddAuthorization();
 services.AddSingleton<IMongoDbContext, MongoDbContext>(x => new MongoDbContext(config.GetConnectionString("MongoDB")));
 
 services.AddDbContext<ApplicationContext>(ConfigureApplicationContextOptions);
-services.AddScoped<IServersGateway, ServersGatewayMongoDB>();
-services.AddScoped<IChannelsGateway, ChannelsGatewayMongoDB>();
-services.AddScoped<IChannelMessagesGateway, ChannelMessagesGatewayMongoDb>();
+
+services.AddSingleton<IMessagesRepository, MessagesRepository>();
+
+services.AddScoped<IServersRepository, ServersRepositoryMongoDB>();
+services.AddScoped<IChannelsRepository, ChannelsRepositoryMongoDB>();
+services.AddScoped<IChannelMessagesRepository, ChannelMessagesRepositoryMongoDb>();
+
+services.AddScoped<IChannelMessagesGateway, ChannelMessagesGateway>();
 
 services.AddCors(opt =>
 {

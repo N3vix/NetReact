@@ -1,8 +1,8 @@
 ﻿using Models;
 
-namespace RESTfulAPI.Gateways;
+namespace RESTfulAPI.Repositories;
 
-public interface IChannelsGateway
+public interface IChannelsRepository
 {
     Task<string> Add(ChannelDetails channelDetails);
     Task<ChannelDetails> GetById(string id);

@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using RESTfulAPI.Gateways;
+using RESTfulAPI.Repositories;
 
-namespace MauiBlazor.Services;
+namespace RESTfulAPI.Controllers;
 
 [ApiController]
 [Route("[controller]")]
@@ -11,30 +11,30 @@ namespace MauiBlazor.Services;
 public class ServersController : ControllerBase
 {
     private ILogger<ServersController> Logger { get; }
-    private IServersGateway ServersGateway { get; }
+    private IServersRepository ServersRepository { get; }
 
-    public ServersController(ILogger<ServersController> logger, IServersGateway serversGateway)
+    public ServersController(ILogger<ServersController> logger, IServersRepository serversRepository)
     {
         Logger = logger;
-        ServersGateway = serversGateway;
+        ServersRepository = serversRepository;
     }
 
     [HttpGet("[action]")]
     public async Task<IEnumerable<ServerDetails>> GetAllServers()
     {
-        return await ServersGateway.Get();
+        return await ServersRepository.Get();
     }
 
     [HttpGet("[action]")]
     public async Task<IEnumerable<ServerDetails>> GetAddedServers()
     {
         var userId = User.Claims.First(c => c.Type == "userid").Value;
-        return await ServersGateway.GetByUserId(userId);
+        return await ServersRepository.GetByUserId(userId);
     }
 
     [HttpGet("[action]")]
     public async Task<ServerDetails> GetServer([FromQuery] string id)
     {
-        return await ServersGateway.GetById(id);
+        return await ServersRepository.GetById(id);
     }
 }

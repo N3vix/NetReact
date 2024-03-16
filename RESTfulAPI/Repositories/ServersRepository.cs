@@ -1,13 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Models;
+using RESTfulAPI.DB;
 
-namespace RESTfulAPI.Gateways;
+namespace RESTfulAPI.Repositories;
 
-public class ServersGateway : IServersGateway
+public class ServersRepository : IServersRepository
 {
     private ApplicationContext ApplicationContext { get; }
 
-    public ServersGateway(ApplicationContext serversContext)
+    public ServersRepository(ApplicationContext serversContext)
     {
         ApplicationContext = serversContext ?? throw new ArgumentNullException(nameof(serversContext));
     }

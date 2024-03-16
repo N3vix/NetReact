@@ -4,7 +4,7 @@ const MessageContainer = ({ messages }) =>
             messages.map((msg, index) =>
                 <table stripped="true" bordered="true">
                     <tr key={index}>
-                        <td>{msg.msg} = {msg.userId}</td>
+                        <td>{msg.content} = {msg.senderId}</td>
                     </tr>
                 </table>)
         }

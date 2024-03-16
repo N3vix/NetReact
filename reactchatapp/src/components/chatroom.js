@@ -4,19 +4,11 @@ import SendMessageForm from "./sendmessageform";
 
 const ChatRoom = ({ messages, sendMessage }) =>
     <div>
-        <Row className="px-5 py-5">
-            <Col sm={10}>
-                <h2>Chat Room</h2>
-            </Col>
-            <Col>
-
-            </Col>
-        </Row>
-        <Row className="px-5 py-5">
+        <Row>
             <Col sm={12}>
                 <MessageContainer messages={messages} />
             </Col>
-            <Col sm={12}>
+            <Col sm={12} style={{position: "sticky", bottom: 0}}>
                 <SendMessageForm sendMessage={sendMessage} />
             </Col>
         </Row>

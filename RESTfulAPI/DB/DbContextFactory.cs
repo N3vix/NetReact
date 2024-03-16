@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace RESTfulAPI;
+namespace RESTfulAPI.DB;
 
 public class DbContextFactory<TContext> : IDbContextFactory<TContext>
     where TContext : DbContext

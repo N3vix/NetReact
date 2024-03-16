@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices;
 
 namespace Models;
 
-public class ChannelMessageRequest
+public class ChannelMessageAddRequest
 {
     [Required]
     public string ChannelId { get; set; }
