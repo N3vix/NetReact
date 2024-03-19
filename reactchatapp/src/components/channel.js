@@ -2,16 +2,23 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 
-import { BACKEND_BASE_URL, USER_TOKEN } from '../constants'
-
-import ChatRoom from './chatroom';
-import { Button } from 'react-bootstrap';
+import { BACKEND_BASE_URL, USER_TOKEN, FETCH_GET } from '../constants'
+import TextChannel from './textchannel';
+import VoiceChannel from './voicechannel';
 
 const Channel = () => {
     const { serverId, channelId } = useParams();
 
+    const [isTextChannel, setIsTextChannel] = useState(true)
+
+    useEffect(() => {
+        FETCH_GET("/Channels/GetChannel" + "?id=" + channelId)
+            .then(r => r.json())
+            .then(data => setIsTextChannel(data.type === 0))
+            .catch(error => console.log(error))
+    }, [channelId]);
+
     const [conn, setConnection] = useState();
-    const [messages, setMessages] = useState([]);
 
     function createHubConnection() {
         const newConnection = new HubConnectionBuilder()
@@ -23,27 +30,12 @@ const Channel = () => {
             // setMessages(messages => [...messages, { userId, msg }])
         });
 
-        newConnection.on("ReceiveSpecificMessage", (msg) => {
-            setMessages(messages => [...messages, msg])
-        });
-
         setConnection(newConnection);
     }
 
-    function initMessage() {
-        fetch(BACKEND_BASE_URL + "/ChannelMessages/Get", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + USER_TOKEN(),
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ channelId, take: "40" })
-        })
-            .then(r => r.json())
-            .then(data => {
-                setMessages(data);
-            })
-            .catch(error => console.log(error))
+    const getPeerConnection = () => {
+        const config = { iceServers: [{ urls: ['stun:stun.l.google.com:19302'] }] };
+        return new RTCPeerConnection(config);
     }
 
     useEffect(() => {
@@ -51,7 +43,6 @@ const Channel = () => {
     }, [channelId]);
 
     useEffect(() => {
-        initMessage();
         if (conn) {
             try {
                 conn
@@ -68,43 +59,12 @@ const Channel = () => {
 
         return () => {
             conn?.stop();
-            setMessages([])
         };
     }, [conn]);
 
-    const sendMessage = async (message) => {
-        try {
-            await conn.invoke("SendMessage", message);
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    const loadPreviousMessages = async () => {
-        fetch(BACKEND_BASE_URL + "/ChannelMessages/GetBefore", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + USER_TOKEN(),
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ channelId, take: "40", DateTime: messages[0].timestamp })
-        })
-            .then(r => r.json())
-            .then(data => {
-                setMessages(messages => [...data, ...messages])
-            })
-            .catch(error => console.log(error))
-    }
-
-    return <div>
-        <h3>Channel: {channelId}</h3>
-        <Button onClick={loadPreviousMessages}>Load previous messages</Button>
-
-        {conn
-            ? <ChatRoom messages={messages} sendMessage={sendMessage}></ChatRoom>
-            : "" // : <WaitingRoom joinChatRoom={joinChatRoom}></WaitingRoom>
-        }
-    </div>
+    return (isTextChannel
+        ? <TextChannel conn={conn} />
+        : <VoiceChannel conn={conn} peerConn={getPeerConnection()} />)
 }
 
 export default Channel;

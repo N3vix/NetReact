@@ -1,4 +1,6 @@
-﻿namespace Models;
+﻿using SIPSorcery.Net;
+
+namespace Models;
 
 public class UserConnection
 {
