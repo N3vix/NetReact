@@ -3,26 +3,13 @@ using Microsoft.AspNetCore.SignalR;
 using Models;
 using RESTfulAPI.Gateways;
 using RESTfulAPI.Repositories;
-using SIPSorcery.Media;
 using SIPSorcery.Net;
-using SIPSorceryMedia.Abstractions;
-using SIPSorceryMedia.Encoders;
-using System.Net;
-using static vpxmd.VpxCodecCxPkt.Data;
 
 namespace RESTfulAPI.Controllers;
 
 [Authorize]
 public sealed class ChatHub : Hub
 {
-    private static List<SDPAudioVideoMediaFormat> AudioOfferFormats =
-    [
-        new(SDPMediaTypesEnum.audio, 111, "OPUS", 48000, 2, "minptime=10;useinbandfec=1")
-    ];
-    private static List<SDPAudioVideoMediaFormat> VideoOfferFormats =
-    [
-        new(SDPMediaTypesEnum.video, 98, "VP8", 90000)
-    ];
 
     private ILogger<ChatHub> Logger { get; }
     private IMessagesRepository MessagesRepository { get; }
@@ -57,8 +44,12 @@ public sealed class ChatHub : Hub
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         MessagesRepository.Connections.Remove(Context.ConnectionId, out _);
+        foreach (var rPC in MessagesRepository.RtcConnections)
+        {
+            rPC.Value.RemoveTrack(Context.ConnectionId);
+        }
         MessagesRepository.RtcConnections.Remove(Context.ConnectionId, out var rtcConn);
-        rtcConn?.Close("connection state changed to failed");
+        rtcConn?.Dispose();
 
         return base.OnDisconnectedAsync(exception);
     }
@@ -83,43 +74,25 @@ public sealed class ChatHub : Hub
         if (!MessagesRepository.Connections.TryGetValue(Context.ConnectionId, out var conn))
             return;
 
-        var userId = Context.User.Claims.First(c => c.Type == "userid").Value;
-
-        var rtcConfig = GetConfig();
-        var connection = new RTCPeerConnection(rtcConfig);
-
-        var videoTrack = new MediaStreamTrack(SDPMediaTypesEnum.video, false, VideoOfferFormats, MediaStreamStatusEnum.SendRecv);
-        connection.addTrack(videoTrack);
-        var audioTrack = new MediaStreamTrack(SDPMediaTypesEnum.audio, false, AudioOfferFormats, MediaStreamStatusEnum.SendRecv);
-        connection.addTrack(audioTrack);
-
-        connection.OnRtpPacketReceived += (IPEndPoint rep, SDPMediaTypesEnum media, RTPPacket rtpPkt) =>
+        var newConnection = new WebRtcConnection(Context.ConnectionId);
+        newConnection.AddTrack(Context.ConnectionId);
+        foreach (var rPC in MessagesRepository.RtcConnections)
         {
-            if (media == SDPMediaTypesEnum.audio)
-            {
-                foreach (var rPC in MessagesRepository.RtcConnections)
-                {
-                    foreach (var stream in rPC.Value.AudioStreamList)
-                    {
-                        rPC.Value.SendAudio(960, rtpPkt.Payload);
-                    }
-                }
-            }
-        };
+            newConnection.AddTrack(rPC.Key);
+            //rPC.Value.AddTrack(Context.ConnectionId);
+        }
+        MessagesRepository.RtcConnections.TryAdd(Context.ConnectionId, newConnection);
 
-        connection.OnVideoFrameReceived += (IPEndPoint remoteEP, uint timestamp, byte[] frame, VideoFormat format) =>
+        newConnection.OnVideoFrameReceived += (string connectionId, byte[] frame) =>
         {
             foreach (var rPC in MessagesRepository.RtcConnections)
             {
-                foreach(var stream in rPC.Value.VideoStreamList)
-                {
-                    stream.SendVideo(3000, frame);
-                }
+                rPC.Value.SendFrame(connectionId, frame);
             }
         };
 
-        connection.OnTimeout += (mediaType) => Logger.LogWarning($"Timeout for {mediaType}.");
-        connection.onconnectionstatechange += (state) =>
+        //connection.OnTimeout += (mediaType) => Logger.LogWarning($"Timeout for {mediaType}.");
+        newConnection.OnConnectionStateChanged += (state) =>
         {
             Logger.LogDebug($"Peer connection state changed to {state}.");
 
@@ -130,7 +103,7 @@ public sealed class ChatHub : Hub
                 if (!_isDisposing)
                 {
                     MessagesRepository.RtcConnections.Remove(Context.ConnectionId, out var rtcConn);
-                    rtcConn?.Close("connection state changed to failed");
+                    rtcConn?.Dispose();
                 }
             }
             else if (state == RTCPeerConnectionState.connected)
@@ -138,29 +111,18 @@ public sealed class ChatHub : Hub
                 Logger.LogDebug("Peer connection connected.");
             }
         };
-        var offerSdp = connection.createOffer(null);
-        await connection.setLocalDescription(offerSdp);
 
-        MessagesRepository.RtcConnections.TryAdd(Context.ConnectionId, connection);
+        await CreateOffer(conn, newConnection);
+    }
+
+    private async Task CreateOffer(UserConnection conn, WebRtcConnection newConnection)
+    {
+        var userId = Context.User.Claims.First(c => c.Type == "userid").Value;
+
+        var offerSdp = await newConnection.CreateOffer();
         await Clients
            .Group($"{conn.ServerId}/{conn.ChannelId}")
            .SendAsync("JoinVoiceChat", offerSdp, $"{userId} has joined");
-    }
-
-    private RTCConfiguration GetConfig()
-    {
-        RTCConfiguration rTCConfiguration = new()
-        {
-            iceServers =
-            [
-                new() { urls = "stun:stun.l.google.com:19302" },
-                new() { urls = "stun:stun1.l.google.com:19302" },
-                new() { urls = "stun:stun2.l.google.com:19302" },
-                new() { urls = "stun:stun3.l.google.com:19302" },
-                new() { urls = "stun:stun4.l.google.com:19302" }
-            ]
-        };
-        return rTCConfiguration;
     }
 
     public async Task SendIce(string data)
@@ -170,10 +132,7 @@ public sealed class ChatHub : Hub
 
         var userId = Context.User.Claims.First(c => c.Type == "userid").Value;
 
-        if (RTCIceCandidateInit.TryParse(data, out var init))
-        {
-            conn.addIceCandidate(init);
-        }
+        conn.AddIceCandidate(data);
     }
 
     public async Task SendAnswer(string data)
@@ -183,16 +142,13 @@ public sealed class ChatHub : Hub
 
         var userId = Context.User.Claims.First(c => c.Type == "userid").Value;
 
-        if (RTCSessionDescriptionInit.TryParse(data, out var init))
+        var setDescriptionResultEnum = conn.AddRemoteDescription(data);
+
+        if (setDescriptionResultEnum != 0)
         {
-            Logger.LogDebug($"Got remote SDP, type {init.type}.");
-            SetDescriptionResultEnum setDescriptionResultEnum = conn.setRemoteDescription(init);
-            if (setDescriptionResultEnum != 0)
-            {
-                Logger.LogWarning($"Failed to set remote description, {setDescriptionResultEnum}.");
-                conn?.Close("failed to set remote description");
-                MessagesRepository.RtcConnections.Remove(Context.ConnectionId, out _);
-            }
+            Logger.LogWarning($"Failed to set remote description, {setDescriptionResultEnum}.");
+            conn?.Dispose();
+            MessagesRepository.RtcConnections.Remove(Context.ConnectionId, out _);
         }
     }
 

@@ -11,7 +11,7 @@ public class MessagesRepository : IMessagesRepository
     public ConcurrentDictionary<string, UserConnection> Connections => _connections;
 
 
-    private ConcurrentDictionary<string, RTCPeerConnection> _rtcConnections = new();
+    private ConcurrentDictionary<string, WebRtcConnection> _rtcConnections = new();
 
-    public ConcurrentDictionary<string, RTCPeerConnection> RtcConnections => _rtcConnections;
+    public ConcurrentDictionary<string, WebRtcConnection> RtcConnections => _rtcConnections;
 }

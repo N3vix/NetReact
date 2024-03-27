@@ -40,7 +40,8 @@ const VoiceChannel = ({ conn, peerConn }) => {
             peerConn.addTrack(track, stream)
         })
         peerConn.ontrack = evt => { 
-            setStreams(evt.streams)
+            setStreams(streams => [...streams, new MediaStream([evt.track])])
+            // setStreams(evt.streams)
         };
         peerConn.onicecandidate = evt => evt.candidate && conn.invoke("SendIce", JSON.stringify(evt.candidate))
         peerConn.onclose = () => { console.log("pc close"); };
