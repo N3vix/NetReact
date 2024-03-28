@@ -16,7 +16,6 @@ const Server = () => {
     }, [serverId])
 
     return <div>
-        <h3>ID: {serverId}</h3>
 
         <div className="page">
             <div className="sidebar">

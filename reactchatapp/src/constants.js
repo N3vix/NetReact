@@ -22,3 +22,14 @@ export const FETCH_POST = (urlSuffix, body) => {
         body: body
     });
 };
+
+export const FETCH_POST_FORM = (urlSuffix, body) => {
+    return fetch(BACKEND_BASE_URL + urlSuffix, {
+        method: "POST",
+        headers: {
+            "Accept": "application/json",
+            "Authorization": "Bearer " + USER_TOKEN(),
+        },
+        body: body
+    });
+};

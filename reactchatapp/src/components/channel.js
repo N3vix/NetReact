@@ -33,11 +33,6 @@ const Channel = () => {
         setConnection(newConnection);
     }
 
-    const getPeerConnection = () => {
-        const config = { iceServers: [{ urls: ['stun:stun.l.google.com:19302'] }] };
-        return new RTCPeerConnection(config);
-    }
-
     useEffect(() => {
         createHubConnection();
     }, [channelId]);
@@ -64,7 +59,7 @@ const Channel = () => {
 
     return (isTextChannel
         ? <TextChannel conn={conn} />
-        : <VoiceChannel conn={conn} peerConn={getPeerConnection()} />)
+        : <VoiceChannel conn={conn}/>)
 }
 
 export default Channel;

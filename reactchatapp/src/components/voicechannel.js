@@ -5,11 +5,16 @@ import { Button } from 'react-bootstrap';
 
 import Video from './video';
 
-const VoiceChannel = ({ conn, peerConn }) => {
+const VoiceChannel = ({ conn }) => {
     const { serverId, channelId } = useParams();
 
-    // const [pc, setPc] = useState();
+    const [peerConn, setPeerConn] = useState();
     const [streams, setStreams] = useState([]);
+
+    const getPeerConnection = () => {
+        const config = { iceServers: [{ urls: ['stun:stun.l.google.com:19302'] }] };
+        return new RTCPeerConnection(config);
+    }
 
     useEffect(() => {
         if (conn) {

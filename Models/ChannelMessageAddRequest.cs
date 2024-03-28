@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Runtime.InteropServices;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace Models;
 
@@ -10,4 +10,6 @@ public class ChannelMessageAddRequest
 
     [Required]
     public string Content { get; set; }
+
+    public IFormFile Image { get; set; }
 }

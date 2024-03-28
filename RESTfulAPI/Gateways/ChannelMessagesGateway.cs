@@ -17,14 +17,15 @@ public class ChannelMessagesGateway : IChannelMessagesGateway
         MessagesRepository = messagesRepository;
     }
 
-    public async Task<string> Add(string senderId, string channelId, string content)
+    public async Task<string> Add(string senderId, string channelId, string content, string image)
     {
         var channelMessage = new ChannelMessage
         {
             ChannelId = channelId,
             SenderId = senderId,
             Timestamp = DateTime.UtcNow,
-            Content = content
+            Content = content,
+            Image = image
         };
 
         return await MessagesRepository.Add(channelMessage);

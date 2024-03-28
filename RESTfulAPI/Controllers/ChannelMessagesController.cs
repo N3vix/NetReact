@@ -13,6 +13,8 @@ public class ChannelMessagesController : ControllerBase
     private ILogger<ChannelMessagesController> Logger { get; }
     private IChannelMessagesGateway MessagesGateway { get; }
 
+    private string ImagesPath { get; }
+
     public ChannelMessagesController(ILogger<ChannelMessagesController> logger, IChannelMessagesGateway messagesGateway)
     {
         ArgumentNullException.ThrowIfNull(logger);
@@ -20,14 +22,29 @@ public class ChannelMessagesController : ControllerBase
 
         Logger = logger;
         MessagesGateway = messagesGateway;
+
+        ImagesPath = Path.Combine(Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData), "DbImages");
     }
 
     [HttpPost("[action]")]
-    public async Task<string> Add([FromBody] ChannelMessageAddRequest request)
+    public async Task<string> Add([FromForm] ChannelMessageAddRequest request)
     {
         var userId = User.Claims.First(c => c.Type == "userid").Value;
 
-        return await MessagesGateway.Add(userId, request.ChannelId, request.Content);
+        if (request.Image != null)
+        {
+            var newImagePath = Path.Combine(ImagesPath, request.Image.FileName);
+            using var fileStream = new FileStream(newImagePath, FileMode.Create);
+            await request.Image.CopyToAsync(fileStream);
+        }
+
+        return await MessagesGateway.Add(userId, request.ChannelId, request.Content, request.Image?.FileName);
+    }
+
+    [HttpPost("[action]")]
+    public async Task<ChannelMessage> GetById([FromBody] ChannelMessageGetByIdRequest request)
+    {
+        return await MessagesGateway.Get(request.MessageId);
     }
 
     [HttpPost("[action]")]
