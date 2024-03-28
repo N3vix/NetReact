@@ -36,11 +36,12 @@ const TextChannel = ({ conn }) => {
         const formData = new FormData();
         formData.append("channelId", channelId);
         formData.append("content", message);
-        formData.append("image", image);
+        if (image)
+            formData.append("image", image);
         FETCH_POST_FORM("/ChannelMessages/Add", formData)
-            .then(r => r.succ.text())
+            .then(r => r.text())
             .then(data => {
-                conn.invoke("SendMessage", data);
+                conn.invoke("SendMessage", data.substring(1).slice(0, -1));
             })
             .catch(error => console.log(error))
     }

@@ -11,5 +11,5 @@ public class ChannelMessageAddRequest
     [Required]
     public string Content { get; set; }
 
-    public IFormFile Image { get; set; }
+    public IFormFile? Image { get; set; }
 }

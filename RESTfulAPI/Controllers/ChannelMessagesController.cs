@@ -23,7 +23,7 @@ public class ChannelMessagesController : ControllerBase
         Logger = logger;
         MessagesGateway = messagesGateway;
 
-        ImagesPath = Path.Combine(Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData), "DbImages");
+        ImagesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "DbImages");
     }
 
     [HttpPost("[action]")]

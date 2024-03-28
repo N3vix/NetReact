@@ -23,7 +23,7 @@ const SendMessageForm = ({ sendMessage }) => {
         setImage(null);
     }}>
         {image
-            ? <img alt="preview image" src={URL.createObjectURL(image)} style={{maxWidth: 400, maxHeight: 400}}/>
+            ? <img alt="preview image" src={URL.createObjectURL(image)} style={{ maxWidth: 400, maxHeight: 400 }} />
             : ""}
         <InputGroup className="mb-3">
             <InputGroup.Text>Chat</InputGroup.Text>
