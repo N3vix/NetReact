@@ -50,6 +50,7 @@ services.AddScoped<IChannelsRepository, ChannelsRepositoryMongoDB>();
 services.AddScoped<IChannelMessagesRepository, ChannelMessagesRepositoryMongoDb>();
 
 services.AddScoped<IChannelMessagesGateway, ChannelMessagesGateway>();
+services.AddScoped<IMessageMediaGetaway, MessageMediaGetaway>();
 
 services.AddCors(opt =>
 {

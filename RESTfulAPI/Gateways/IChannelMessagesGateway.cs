@@ -8,4 +8,5 @@ public interface IChannelMessagesGateway
     Task<ChannelMessage> Get(string id);
     Task<IEnumerable<ChannelMessage>> Get(string channelId, int take);
     Task<IEnumerable<ChannelMessage>> GetBefore(DateTime dateTime, string channelId, int take);
+    Task<bool> Delete(string senderId, string messageId);
 }

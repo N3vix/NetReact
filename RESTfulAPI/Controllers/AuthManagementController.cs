@@ -5,7 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 using Models;
 using RESTfulAPI.Configurations;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
 
 namespace RESTfulAPI.Controllers;
@@ -56,7 +55,8 @@ public class AuthManagementController : ControllerBase
         return Ok(new UserRegistrationResponse
         {
             Success = true,
-            Token = token
+            Token = token,
+            UserId = newUser.Id
         });
     }
 
@@ -65,6 +65,7 @@ public class AuthManagementController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest("Invalid request payload");
+
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
         if (existingUser == null)
             return BadRequest("User not exist");
@@ -78,7 +79,8 @@ public class AuthManagementController : ControllerBase
         return Ok(new UserLoginResponse
         {
             Success = true,
-            Token = token
+            Token = token,
+            UserId = existingUser.Id
         });
     }
 
@@ -86,29 +88,35 @@ public class AuthManagementController : ControllerBase
     {
         var tokenHandler = new JwtSecurityTokenHandler();
 
-        var issuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.ValidKey));
-
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new Claim[]
-            {
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new(JwtRegisteredClaimNames.Sub, user.Email),
-                new(JwtRegisteredClaimNames.Email, user.Email),
-                new("userid", user.Id),
-            }),
-            Expires = DateTime.UtcNow.AddHours(1),
-            Issuer = _jwtConfig.ValidIssuer,
-            SigningCredentials = new SigningCredentials(issuerSigningKey, SecurityAlgorithms.HmacSha256),
-            Claims = new Dictionary<string, object>
-            {
-                { JwtRegisteredClaimNames.Aud, _jwtConfig.ValidAudiences }
-            }
-        };
+        var tokenDescriptor = GetTokenDescriptor(user);
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var jwt = tokenHandler.WriteToken(token);
 
         return jwt;
+    }
+
+    private SecurityTokenDescriptor GetTokenDescriptor(IdentityUser user)
+    {
+        var issuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.ValidKey));
+        return new SecurityTokenDescriptor
+        {
+            Expires = DateTime.UtcNow.AddHours(1),
+            Issuer = _jwtConfig.ValidIssuer,
+            SigningCredentials = new SigningCredentials(issuerSigningKey, SecurityAlgorithms.HmacSha256),
+            Claims = GetClaims(user)
+        };
+    }
+
+    private IDictionary<string, object> GetClaims(IdentityUser user)
+    {
+        return new Dictionary<string, object>
+        {
+            { JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()},
+            { JwtRegisteredClaimNames.Sub, user.Email },
+            { JwtRegisteredClaimNames.Email, user.Email },
+            { "userid", user.Id },
+            { JwtRegisteredClaimNames.Aud, _jwtConfig.ValidAudiences }
+        };
     }
 }

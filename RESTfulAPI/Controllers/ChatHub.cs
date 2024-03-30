@@ -59,11 +59,19 @@ public sealed class ChatHub : Hub
         if (!MessagesRepository.Connections.TryGetValue(Context.ConnectionId, out var conn))
             return;
 
-        var userId = Context.User.Claims.First(c => c.Type == "userid").Value;
-
         await Clients
             .Group($"{conn.ServerId}/{conn.ChannelId}")
             .SendAsync("ReceiveSpecificMessage", messageId);
+    }
+
+    public async Task DeleteMessage(string messageId)
+    {
+        if (!MessagesRepository.Connections.TryGetValue(Context.ConnectionId, out var conn))
+            return;
+
+        await Clients
+            .Group($"{conn.ServerId}/{conn.ChannelId}")
+            .SendAsync("DeleteMessage", messageId);
     }
 
     //public async Task JoinVoiceChat()

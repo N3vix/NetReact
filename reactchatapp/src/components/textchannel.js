@@ -16,6 +16,7 @@ const TextChannel = ({ conn }) => {
         initMessages();
         if (conn) {
             conn.on("ReceiveSpecificMessage", (messageId) => loadSpecificMessage(messageId));
+            conn.on("DeleteMessage", (messageId) => deleteSpecificMessage(messageId))
         }
 
         return () => {
@@ -46,6 +47,20 @@ const TextChannel = ({ conn }) => {
             .catch(error => console.log(error))
     }
 
+    const editMessage = async (messageId) => {
+
+    }
+
+    const deleteMessage = async (messageId) => {
+        FETCH_POST("/ChannelMessages/Delete", JSON.stringify({ messageId }))
+            .then(r => r.text())
+            .then(data => {
+                if (/^true$/i.test(data))
+                    conn.invoke("DeleteMessage", messageId);
+            })
+            .catch(error => console.log(error))
+    }
+
     const loadPreviousMessages = async () => {
         FETCH_POST("/ChannelMessages/GetBefore", JSON.stringify({ channelId, take: "40", DateTime: messages[0].timestamp }))
             .then(r => r.json())
@@ -64,6 +79,10 @@ const TextChannel = ({ conn }) => {
             .catch(error => console.log(error))
     }
 
+    const deleteSpecificMessage = async (messageId) => {
+        setMessages(messages => messages.filter(message => message.id !== messageId))
+    }
+
     return <div>
         <div>
             <h3>Server: {serverId}</h3>
@@ -72,7 +91,7 @@ const TextChannel = ({ conn }) => {
         <Button onClick={loadPreviousMessages}>Load previous messages</Button>
 
         {conn
-            ? <ChatRoom messages={messages} sendMessage={sendMessage}></ChatRoom>
+            ? <ChatRoom messages={messages} sendMessage={sendMessage} editMessage={editMessage} deleteMessage={deleteMessage}></ChatRoom>
             : ""
         }
     </div>

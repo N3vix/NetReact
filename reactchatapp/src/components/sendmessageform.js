@@ -28,10 +28,9 @@ const SendMessageForm = ({ sendMessage }) => {
         <InputGroup className="mb-3">
             <InputGroup.Text>Chat</InputGroup.Text>
             <Button variant="primary" type="button" onClick={openFileSelection}>+</Button>
+            <input type="file" onChange={onFileSelectionChange} ref={hiddenFileInput} style={{ display: 'none' }} />
             <Form.Control onChange={e => setMessage(e.target.value)} value={msg} placeholder="type a msg"></Form.Control>
             <Button variant="primary" type="submit" disabled={!msg}>Send</Button>
-
-            <input type="file" onChange={onFileSelectionChange} ref={hiddenFileInput} style={{ display: 'none' }} />
         </InputGroup>
 
     </Form>

@@ -12,18 +12,19 @@ public class ChannelMessagesController : ControllerBase
 {
     private ILogger<ChannelMessagesController> Logger { get; }
     private IChannelMessagesGateway MessagesGateway { get; }
+    private IMessageMediaGetaway MessageMediaGetaway { get; }
 
-    private string ImagesPath { get; }
-
-    public ChannelMessagesController(ILogger<ChannelMessagesController> logger, IChannelMessagesGateway messagesGateway)
+    public ChannelMessagesController(
+        ILogger<ChannelMessagesController> logger,
+        IChannelMessagesGateway messagesGateway,
+        IMessageMediaGetaway messageMediaGetaway)
     {
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(messagesGateway);
 
         Logger = logger;
         MessagesGateway = messagesGateway;
-
-        ImagesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "DbImages");
+        MessageMediaGetaway = messageMediaGetaway;
     }
 
     [HttpPost("[action]")]
@@ -31,14 +32,8 @@ public class ChannelMessagesController : ControllerBase
     {
         var userId = User.Claims.First(c => c.Type == "userid").Value;
 
-        if (request.Image != null)
-        {
-            var newImagePath = Path.Combine(ImagesPath, request.Image.FileName);
-            using var fileStream = new FileStream(newImagePath, FileMode.Create);
-            await request.Image.CopyToAsync(fileStream);
-        }
-
-        return await MessagesGateway.Add(userId, request.ChannelId, request.Content, request.Image?.FileName);
+        var fileName = await MessageMediaGetaway.WriteMediaAsync(request.Image);
+        return await MessagesGateway.Add(userId, request.ChannelId, request.Content, fileName);
     }
 
     [HttpPost("[action]")]
@@ -57,5 +52,21 @@ public class ChannelMessagesController : ControllerBase
     public async Task<IEnumerable<ChannelMessage>> GetBefore([FromBody] ChannelMessageGetRequest request)
     {
         return await MessagesGateway.GetBefore(request.DateTime, request.ChannelId, request.Take);
+    }
+
+    [HttpPost("[action]")]
+    public async Task<bool> Update([FromBody] ChannelMessageUpdateRequest request)
+    {
+        var userId = User.Claims.First(c => c.Type == "userid").Value;
+
+        return await MessagesGateway.Delete(userId, request.MessageId);
+    }
+
+    [HttpPost("[action]")]
+    public async Task<bool> Delete([FromBody] ChannelMessageDeleteRequest request)
+    {
+        var userId = User.Claims.First(c => c.Type == "userid").Value;
+
+        return await MessagesGateway.Delete(userId, request.MessageId);
     }
 }

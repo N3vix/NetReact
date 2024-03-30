@@ -6,7 +6,7 @@ import user_icon from "./assets/person.png";
 import email_icon from "./assets/email.png";
 import password_icon from "./assets/password.png";
 import "./homepage.css"
-import { BACKEND_BASE_URL, USER_TOKEN_KEY } from '../constants'
+import { BACKEND_BASE_URL, USER_TOKEN_KEY, USER_ID_KEY } from '../constants'
 
 const LoginSignup = () => {
 
@@ -73,6 +73,7 @@ const LoginSignup = () => {
             const response = await SignUp();
             if (response.success) {
                 localStorage.setItem(USER_TOKEN_KEY, response['token']);
+                localStorage.setItem(USER_ID_KEY, response['userId']);
                 window.location.href = "/";
                 // localStorage.setItem('user', JSON.stringify(response['user']));
             }
@@ -83,6 +84,7 @@ const LoginSignup = () => {
             const response = await Login();
             if (response.success) {
                 localStorage.setItem(USER_TOKEN_KEY, response['token']);
+                localStorage.setItem(USER_ID_KEY, response['userId']);
                 window.location.href = "/";
                 // localStorage.setItem('user', JSON.stringify(response['user']));
             }
