@@ -71,7 +71,8 @@ public class ChannelMessagesRepositoryMongoDb : IChannelMessagesRepository
 
         var filter = GetIdFilter(id);
         var update = Builders<ChannelMessage>.Update
-            .Set(x => x.Content, message.Content);
+            .Set(x => x.Content, message.Content)
+            .Set(x => x.EditedTimestamp, message.EditedTimestamp);
 
         var result = await _mongoDbContext.ChannelMessages.UpdateOneAsync(filter, update);
 

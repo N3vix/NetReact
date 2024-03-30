@@ -15,8 +15,9 @@ const TextChannel = ({ conn }) => {
     useEffect(() => {
         initMessages();
         if (conn) {
-            conn.on("ReceiveSpecificMessage", (messageId) => loadSpecificMessage(messageId));
-            conn.on("DeleteMessage", (messageId) => deleteSpecificMessage(messageId))
+            conn.on("AddMessage", (messageId) => loadSpecificMessage(messageId));
+            conn.on("EditMessage", (messageId) => editSpecificMessage(messageId));
+            conn.on("DeleteMessage", (messageId) => deleteSpecificMessage(messageId));
         }
 
         return () => {
@@ -33,10 +34,10 @@ const TextChannel = ({ conn }) => {
             .catch(error => console.log(error))
     }
 
-    const sendMessage = async (message, image) => {
+    const sendMessage = async (content, image) => {
         const formData = new FormData();
         formData.append("channelId", channelId);
-        formData.append("content", message);
+        formData.append("content", content);
         if (image)
             formData.append("image", image);
         FETCH_POST_FORM("/ChannelMessages/Add", formData)
@@ -47,8 +48,14 @@ const TextChannel = ({ conn }) => {
             .catch(error => console.log(error))
     }
 
-    const editMessage = async (messageId) => {
-
+    const editMessage = async (messageId, content) => {
+        FETCH_POST("/ChannelMessages/Update", JSON.stringify({ messageId, content }))
+            .then(r => r.text())
+            .then(data => {
+                if (/^true$/i.test(data))
+                    conn.invoke("EditMessage", messageId);
+            })
+            .catch(error => console.log(error))
     }
 
     const deleteMessage = async (messageId) => {
@@ -75,6 +82,19 @@ const TextChannel = ({ conn }) => {
             .then(r => r.json())
             .then(message => {
                 setMessages(messages => [...messages, message])
+            })
+            .catch(error => console.log(error))
+    }
+
+    const editSpecificMessage = async (messageId) => {
+        FETCH_POST("/ChannelMessages/GetById", JSON.stringify({ messageId }))
+            .then(r => r.json())
+            .then(message => {
+                setMessages(messages => {
+                    const index = messages.findIndex(message => message.id === messageId)
+                    messages[index] = message;
+                    return Array.from(messages);
+                })
             })
             .catch(error => console.log(error))
     }

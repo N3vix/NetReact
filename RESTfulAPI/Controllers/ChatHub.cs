@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.SignalR;
 using Models;
 using RESTfulAPI.Gateways;
 using RESTfulAPI.Repositories;
-using SIPSorcery.Net;
 
 namespace RESTfulAPI.Controllers;
 
@@ -55,23 +54,22 @@ public sealed class ChatHub : Hub
     }
 
     public async Task SendMessage(string messageId)
-    {
-        if (!MessagesRepository.Connections.TryGetValue(Context.ConnectionId, out var conn))
-            return;
-
-        await Clients
-            .Group($"{conn.ServerId}/{conn.ChannelId}")
-            .SendAsync("ReceiveSpecificMessage", messageId);
-    }
+        => await UpdateMessage("AddMessage", messageId);
 
     public async Task DeleteMessage(string messageId)
+        => await UpdateMessage("DeleteMessage", messageId);
+
+    public async Task EditMessage(string messageId)
+        => await UpdateMessage("EditMessage", messageId);
+
+    private async Task UpdateMessage(string actionName, string messageId)
     {
         if (!MessagesRepository.Connections.TryGetValue(Context.ConnectionId, out var conn))
             return;
 
         await Clients
             .Group($"{conn.ServerId}/{conn.ChannelId}")
-            .SendAsync("DeleteMessage", messageId);
+            .SendAsync(actionName, messageId);
     }
 
     //public async Task JoinVoiceChat()

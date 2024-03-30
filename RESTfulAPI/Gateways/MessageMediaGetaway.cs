@@ -9,7 +9,7 @@ public class MessageMediaGetaway : IMessageMediaGetaway
         ImagesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "DbImages");
     }
 
-    public async Task<string> WriteMediaAsync(IFormFile formFile)
+    public async Task<string> WriteAsync(IFormFile formFile)
     {
         if (formFile == null) return null;
 

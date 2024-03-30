@@ -2,5 +2,5 @@
 
 public interface IMessageMediaGetaway
 {
-    Task<string> WriteMediaAsync(IFormFile formFile);
+    Task<string> WriteAsync(IFormFile formFile);
 }

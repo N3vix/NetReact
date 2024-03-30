@@ -32,7 +32,7 @@ public class ChannelMessagesController : ControllerBase
     {
         var userId = User.Claims.First(c => c.Type == "userid").Value;
 
-        var fileName = await MessageMediaGetaway.WriteMediaAsync(request.Image);
+        var fileName = await MessageMediaGetaway.WriteAsync(request.Image);
         return await MessagesGateway.Add(userId, request.ChannelId, request.Content, fileName);
     }
 
@@ -59,7 +59,7 @@ public class ChannelMessagesController : ControllerBase
     {
         var userId = User.Claims.First(c => c.Type == "userid").Value;
 
-        return await MessagesGateway.Delete(userId, request.MessageId);
+        return await MessagesGateway.Update(userId, request.MessageId, request.Content);
     }
 
     [HttpPost("[action]")]
