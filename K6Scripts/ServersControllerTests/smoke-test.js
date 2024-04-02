@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
-import * as config from './config.js';
+import * as config from '../globalConfig.js';
 
 export const options = {
     vus: 1,

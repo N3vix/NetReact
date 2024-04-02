@@ -28,12 +28,13 @@ public class ChannelMessagesController : ControllerBase
     }
 
     [HttpPost("[action]")]
-    public async Task<string> Add([FromForm] ChannelMessageAddRequest request)
+    public async Task<IActionResult> Add([FromForm] ChannelMessageAddRequest request)
     {
         var userId = User.Claims.First(c => c.Type == "userid").Value;
 
         var fileName = await MessageMediaGetaway.WriteAsync(request.Image);
-        return await MessagesGateway.Add(userId, request.ChannelId, request.Content, fileName);
+        var addedMessageId = await MessagesGateway.Add(userId, request.ChannelId, request.Content, fileName);
+        return Ok(new { messageId = addedMessageId });
     }
 
     [HttpPost("[action]")]

@@ -1,8 +1,6 @@
 import http from 'k6/http';
 
 const API_BASE_URL = 'https://localhost:7153/';
-const API_GET_ALL_SERVERS_URL = `${API_BASE_URL}Servers/GetAllServers`;
-const API_GET_ADDED_SERVERS_URL = `${API_BASE_URL}Servers/GetAddedServers`;
 const API_LOGIN_URL = `${API_BASE_URL}AuthManagement/Login`
 
 const headerinfo = {
@@ -26,7 +24,7 @@ const LOGIN = () => {
 const BUILD_BEARER_HEADER = (token) => {
     return {
         headers: {
-            'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'Authorization': `Bearer ${token}`
         }
     };
@@ -35,12 +33,12 @@ const BUILD_BEARER_HEADER = (token) => {
 const BUILD_LOAD_STAGES = () => {
     return [
         { duration: '5s', target: 5 },
-        { duration: '30s', target: 5 },
-        { duration: '5s', target: 20 },
-        { duration: '30s', target: 20 },
-        { duration: '5s', target: 5 },
-        { duration: '30s', target: 5 },
-        { duration: '5s', target: 0 },
+        // { duration: '30s', target: 5 },
+        // { duration: '5s', target: 20 },
+        // { duration: '30s', target: 20 },
+        // { duration: '5s', target: 5 },
+        // { duration: '30s', target: 5 },
+        // { duration: '5s', target: 0 },
     ];
 }
 
@@ -53,8 +51,7 @@ const BUILD_SPIKE_STAGES = () => {
 }
 
 export {
-    API_GET_ALL_SERVERS_URL,
-    API_GET_ADDED_SERVERS_URL,
+    API_BASE_URL,
     LOGIN, BUILD_BEARER_HEADER,
     BUILD_LOAD_STAGES,
     BUILD_SPIKE_STAGES
