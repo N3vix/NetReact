@@ -7,13 +7,16 @@ public class ChannelMessagesGateway : IChannelMessagesGateway
 {
     private ILogger<ChannelMessagesGateway> Logger { get; }
     private IChannelMessagesRepository MessagesRepository { get; }
+    private IServersRepository ServersRepository { get; }
 
     public ChannelMessagesGateway(
         ILogger<ChannelMessagesGateway> logger,
-        IChannelMessagesRepository messagesRepository)
+        IChannelMessagesRepository messagesRepository,
+        IServersRepository serversRepository)
     {
         Logger = logger;
         MessagesRepository = messagesRepository;
+        ServersRepository = serversRepository;
     }
 
     public async Task<string> Add(string senderId, string channelId, string content, string image)

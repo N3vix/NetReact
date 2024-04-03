@@ -1,6 +1,6 @@
 ﻿namespace RESTfulAPI.Gateways;
 
-public class MessageMediaGetaway : IMessageMediaGetaway
+internal class MessageMediaGetaway : IMessageMediaGetaway
 {
     private string ImagesPath { get; }
 

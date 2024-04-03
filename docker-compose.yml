@@ -13,6 +13,8 @@ services:
   apiServer:
     build: .
     image: restfulapi
+    environment:
+      - name=value
 
 volumes:
   dbdata:

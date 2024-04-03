@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using RESTfulAPI.Repositories;
+using RESTfulAPI.Gateways;
 
 namespace RESTfulAPI.Controllers;
 
@@ -11,30 +11,30 @@ namespace RESTfulAPI.Controllers;
 public class ServersController : ControllerBase
 {
     private ILogger<ServersController> Logger { get; }
-    private IServersRepository ServersRepository { get; }
+    private IServersGateway ServersGateway { get; }
 
-    public ServersController(ILogger<ServersController> logger, IServersRepository serversRepository)
+    public ServersController(ILogger<ServersController> logger, IServersGateway serversGateway)
     {
         Logger = logger;
-        ServersRepository = serversRepository;
+        ServersGateway = serversGateway;
     }
 
     [HttpGet("[action]")]
     public async Task<IEnumerable<ServerDetails>> GetAllServers()
     {
-        return await ServersRepository.Get();
+        return await ServersGateway.GetAllServers();
     }
 
     [HttpGet("[action]")]
     public async Task<IEnumerable<ServerDetails>> GetAddedServers()
     {
         var userId = User.Claims.First(c => c.Type == "userid").Value;
-        return await ServersRepository.GetByUserId(userId);
+        return await ServersGateway.GetFollowedServers(userId);
     }
 
     [HttpGet("[action]")]
     public async Task<ServerDetails> GetServer([FromQuery] string id)
     {
-        return await ServersRepository.GetById(id);
+        return await ServersGateway.GetServer(id);
     }
 }

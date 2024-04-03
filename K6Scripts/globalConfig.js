@@ -50,9 +50,14 @@ const BUILD_SPIKE_STAGES = () => {
     ];
 }
 
+const GET_RANDOM = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
 export {
     API_BASE_URL,
     LOGIN, BUILD_BEARER_HEADER,
     BUILD_LOAD_STAGES,
-    BUILD_SPIKE_STAGES
+    BUILD_SPIKE_STAGES,
+    GET_RANDOM,
 };

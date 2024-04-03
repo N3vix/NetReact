@@ -26,7 +26,6 @@ public class ChannelsRepositoryMongoDB : IChannelsRepository
         return channelDetails.Id;
     }
 
-
     public async Task<ChannelDetails> GetById(string id)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
