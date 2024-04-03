@@ -2,7 +2,8 @@ import http from 'k6/http';
 import { sleep } from 'k6';
 import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js";
 
-import * as config from '../globalConfig.js';
+import * as globalConfig from '../globalConfig.js';
+import * as config from './Config.js';
 
 export const options = {
     scenarios: {
@@ -13,7 +14,7 @@ export const options = {
             preAllocatedVUs: 50,
             maxVUs: 400,
             timeUnit: '1s',
-            stages: config.BUILD_SPIKE_STAGES(),
+            stages: globalConfig.BUILD_SPIKE_STAGES(),
             tags: { test_type: 'api' },
             exec: "getAllServersTest"
         },
@@ -25,7 +26,7 @@ export const options = {
             preAllocatedVUs: 50,
             maxVUs: 400,
             timeUnit: '1s',
-            stages: config.BUILD_SPIKE_STAGES(),
+            stages: globalConfig.BUILD_SPIKE_STAGES(),
             tags: { test_type: 'api' },
             exec: "getAddedServersTest",
         },
@@ -36,16 +37,16 @@ export const options = {
 };
 
 export const setup = () => {
-    return { token: config.LOGIN() };
+    return { token: globalConfig.LOGIN() };
 }
 
 export const getAllServersTest = (data) => {
-    http.get(config.API_GET_ALL_SERVERS_URL, config.BUILD_BEARER_HEADER(data.token));
+    http.get(config.API_GET_ALL_SERVERS_URL, globalConfig.BUILD_BEARER_HEADER(data.token));
     // sleep(1);
 }
 
 export const getAddedServersTest = (data) => {
-    http.get(config.API_GET_ADDED_SERVERS_URL, config.BUILD_BEARER_HEADER(data.token));
+    http.get(config.API_GET_ADDED_SERVERS_URL, globalConfig.BUILD_BEARER_HEADER(data.token));
     // sleep(1);
 }
 

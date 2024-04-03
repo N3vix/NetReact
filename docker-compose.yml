@@ -1,0 +1,22 @@
+version: '1'
+
+services:
+  mongo:
+    image: mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - dbdata:/data/db
+    networks:
+      - node-network
+  
+  apiServer:
+    build: .
+    image: restfulapi
+
+volumes:
+  dbdata:
+
+networks:
+  node-network:
+    driver: bridge
