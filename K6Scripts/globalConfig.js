@@ -33,19 +33,20 @@ const BUILD_BEARER_HEADER = (token) => {
 const BUILD_LOAD_STAGES = () => {
     return [
         { duration: '5s', target: 5 },
-        // { duration: '30s', target: 5 },
-        // { duration: '5s', target: 20 },
-        // { duration: '30s', target: 20 },
-        // { duration: '5s', target: 5 },
-        // { duration: '30s', target: 5 },
-        // { duration: '5s', target: 0 },
+        { duration: '30s', target: 5 },
+        { duration: '5s', target: 20 },
+        { duration: '30s', target: 20 },
+        { duration: '5s', target: 5 },
+        { duration: '30s', target: 5 },
+        { duration: '5s', target: 0 },
     ];
 }
 
 const BUILD_SPIKE_STAGES = () => {
     return [
-        { duration: '5s', target: 6400 },
-        { duration: '1m', target: 6400 },
+        { duration: '5s', target: 120 },
+        { duration: '5s', target: 1600 },
+        { duration: '1m', target: 1600 },
         { duration: '5s', target: 0 },
     ];
 }

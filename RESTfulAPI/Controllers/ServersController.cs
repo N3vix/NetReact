@@ -28,8 +28,7 @@ public class ServersController : ControllerBase
     [HttpGet("[action]")]
     public async Task<IEnumerable<ServerDetails>> GetAddedServers()
     {
-        var userId = User.Claims.First(c => c.Type == "userid").Value;
-        return await ServersGateway.GetFollowedServers(userId);
+        return await ServersGateway.GetFollowedServers(User.GetUserId());
     }
 
     [HttpGet("[action]")]

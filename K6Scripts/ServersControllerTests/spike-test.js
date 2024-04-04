@@ -52,6 +52,6 @@ export const getAddedServersTest = (data) => {
 
 export function handleSummary(data) {
     return {
-        "summary.html": htmlReport(data),
+        "summaryCacheNonLocked.html": htmlReport(data),
     };
 }
