@@ -1,10 +1,11 @@
 ﻿using Models;
 using MongoDB.Driver;
 using RESTfulAPI.DB;
+using System.Linq.Expressions;
 
 namespace RESTfulAPI.Repositories.MongoDB;
 
-public class ServerFollowersRepositoryMongoDB : IServerFollowersRepositoryMongoDB
+public class ServerFollowersRepositoryMongoDB : IServerFollowersRepository
 {
     private readonly IMongoDbContext _mongoDbContext;
 
@@ -57,7 +58,7 @@ public class ServerFollowersRepositoryMongoDB : IServerFollowersRepositoryMongoD
             GetFilter(x => x.UserId, userId) &
             GetFilter(x => x.ServerId, serverId);
 
-        var result = await _mongoDbContext.Followers.Find(filter).FirstOrDefaultAsync();
+        var result = await _mongoDbContext.Followers.Find(filter)?.FirstOrDefaultAsync();
 
         return result != null;
     }
@@ -72,6 +73,6 @@ public class ServerFollowersRepositoryMongoDB : IServerFollowersRepositoryMongoD
         return result.DeletedCount == 1;
     }
 
-    private FilterDefinition<ServerFollower> GetFilter<T>(Func<ServerFollower, T> valueSelector, T value)
-    => Builders<ServerFollower>.Filter.Eq(x => valueSelector(x), value);
+    private FilterDefinition<ServerFollower> GetFilter<T>(Expression<Func<ServerFollower, T>> valueSelector, T value)
+        => Builders<ServerFollower>.Filter.Eq(valueSelector, value);
 }

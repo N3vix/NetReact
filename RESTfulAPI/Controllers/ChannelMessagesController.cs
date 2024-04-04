@@ -34,40 +34,55 @@ public class ChannelMessagesController : ControllerBase
 
         var fileName = await MessageMediaGetaway.WriteAsync(request.Image);
         var addedMessageId = await MessagesGateway.Add(userId, request.ChannelId, request.Content, fileName);
-        return Ok(new { messageId = addedMessageId });
+
+        return UnpuckResult(addedMessageId, value => new { messageId = value });
     }
 
     [HttpPost("[action]")]
-    public async Task<ChannelMessage> GetById([FromBody] ChannelMessageGetByIdRequest request)
+    public async Task<IActionResult> GetById([FromBody] ChannelMessageGetByIdRequest request)
     {
-        return await MessagesGateway.Get(request.MessageId);
+        var result = await MessagesGateway.Get(User.GetUserId(), request.MessageId);
+
+        return UnpuckResult(result);
     }
 
     [HttpPost("[action]")]
-    public async Task<IEnumerable<ChannelMessage>> Get([FromBody] ChannelMessageGetRequest request)
+    public async Task<IActionResult> Get([FromBody] ChannelMessageGetRequest request)
     {
-        return await MessagesGateway.Get(request.ChannelId, request.Take);
+        var result = await MessagesGateway.Get(User.GetUserId(), request.ChannelId, request.Take);
+
+        return UnpuckResult(result);
     }
 
     [HttpPost("[action]")]
-    public async Task<IEnumerable<ChannelMessage>> GetBefore([FromBody] ChannelMessageGetRequest request)
+    public async Task<IActionResult> GetBefore([FromBody] ChannelMessageGetRequest request)
     {
-        return await MessagesGateway.GetBefore(request.DateTime, request.ChannelId, request.Take);
+        var result = await MessagesGateway.GetBefore(User.GetUserId(), request.ChannelId, request.DateTime, request.Take);
+
+        return UnpuckResult(result);
     }
 
     [HttpPost("[action]")]
-    public async Task<bool> Update([FromBody] ChannelMessageUpdateRequest request)
+    public async Task<IActionResult> Update([FromBody] ChannelMessageUpdateRequest request)
     {
-        var userId = User.Claims.First(c => c.Type == "userid").Value;
+        var result = await MessagesGateway.Update(User.GetUserId(), request.MessageId, request.Content);
 
-        return await MessagesGateway.Update(userId, request.MessageId, request.Content);
+        return UnpuckResult(result);
     }
 
     [HttpPost("[action]")]
-    public async Task<bool> Delete([FromBody] ChannelMessageDeleteRequest request)
+    public async Task<IActionResult> Delete([FromBody] ChannelMessageDeleteRequest request)
     {
-        var userId = User.Claims.First(c => c.Type == "userid").Value;
+        var result = await MessagesGateway.Delete(User.GetUserId(), request.MessageId);
 
-        return await MessagesGateway.Delete(userId, request.MessageId);
+        return UnpuckResult(result);
+    }
+
+    private IActionResult UnpuckResult<TValue>(Result<TValue> result, Func<TValue, object> valueBuilder = null)
+    {
+        if (result.Success)
+            return Ok(valueBuilder == null ? result.Value : valueBuilder(result.Value));
+
+        return BadRequest(new { Errors = result.Errors });
     }
 }

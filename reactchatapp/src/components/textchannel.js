@@ -31,7 +31,9 @@ const TextChannel = ({ conn }) => {
             .then(data => {
                 setMessages(data);
             })
-            .catch(error => console.log(error))
+            .catch(error => {
+                console.log(error)
+            })
     }
 
     const sendMessage = async (content, image) => {

@@ -2,7 +2,7 @@
 
 namespace RESTfulAPI.Repositories.MongoDB
 {
-    public interface IServerFollowersRepositoryMongoDB
+    public interface IServerFollowersRepository
     {
         Task<string> Add(ServerFollower follower);
         Task<bool> Delete(string id);

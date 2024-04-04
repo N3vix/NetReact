@@ -15,6 +15,7 @@ internal static class ApplicationContextBuilder
 
         services.AddSingleton<IMessagesRepository, MessagesRepository>();
         services.AddScoped<IServersRepository, ServersRepositoryMongoDB>();
+        services.AddScoped<IServerFollowersRepository, ServerFollowersRepositoryMongoDB>();
         services.AddScoped<IChannelsRepository, ChannelsRepositoryMongoDB>();
         services.AddScoped<IChannelMessagesRepository, ChannelMessagesRepositoryMongoDb>();
     }
