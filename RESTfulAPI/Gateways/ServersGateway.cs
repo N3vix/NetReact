@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Models;
+using RESTfulAPI.Caching;
 using RESTfulAPI.Repositories;
 
 namespace RESTfulAPI.Gateways;
@@ -24,21 +25,21 @@ internal class ServersGateway : IServersGateway
         var expirationTime = DateTimeOffset.Now.AddMinutes(5.0);
 
         cacheData = await ServersRepository.Get();
-        CacheService.SetData(nameof(GetAllServers), cacheData, expirationTime);
+        await CacheService.SetData(nameof(GetAllServers), cacheData, expirationTime);
 
         return cacheData;
     }
 
     public async Task<IEnumerable<ServerDetails>> GetFollowedServers(string userId)
     {
-        var cacheData = await CacheService.GetData<IEnumerable<ServerDetails>>(nameof(GetFollowedServers));
+        var cacheData = await CacheService.GetData<IEnumerable<ServerDetails>>($"{nameof(GetFollowedServers)}{userId}");
         if (cacheData != null)
             return cacheData;
 
         var expirationTime = DateTimeOffset.Now.AddMinutes(5.0);
 
         cacheData = await ServersRepository.GetByUserId(userId);
-        CacheService.SetData(nameof(GetFollowedServers), cacheData, expirationTime);
+        await CacheService.SetData(nameof(GetFollowedServers), cacheData, expirationTime);
 
         return cacheData;
     }

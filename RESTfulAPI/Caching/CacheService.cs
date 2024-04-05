@@ -1,30 +1,8 @@
 ﻿using Newtonsoft.Json;
-using StackExchange.Redis;
 
-namespace RESTfulAPI;
+namespace RESTfulAPI.Caching;
 
-public class CacheConnection
-{
-    public IDatabase Db { get; }
-
-    public CacheConnection(IConfiguration configuration)
-    {
-        var redisUrl = configuration.GetValue<string>("RedisURL");
-        Db = ConnectionMultiplexer.Connect(redisUrl).GetDatabase();
-    }
-}
-
-public interface ICacheService
-{
-    Task<T> GetData<T>(string key);
-
-    Task<bool> SetData<T>(string key, T value, DateTimeOffset expirationTime);
-
-    /// <returns></returns>
-    Task<object> RemoveData(string key);
-}
-
-public class CacheService : ICacheService
+internal class CacheService : ICacheService
 {
     private CacheConnection CacheConnection { get; }
 

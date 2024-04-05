@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Options;
-using RESTfulAPI;
 using RESTfulAPI.ApiSetup;
 using RESTfulAPI.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -15,10 +14,8 @@ services.AddSwaggerGen();
 services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 services.AddSignalR();
 
-services.AddSingleton<CacheConnection>();
-services.AddScoped<ICacheService, CacheService>();
-
 services.SetupAuthorisation(config);
+services.SetupCache(config);
 services.SetupApplicationContext(config);
 services.SetupGateways();
 services.SetupCors();
