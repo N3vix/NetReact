@@ -1,16 +1,35 @@
 ﻿namespace Models;
 
-public class Result<T>
+public readonly struct Result<TValue, TError>
 {
-    public bool Success { get; private set; }
-    public string[] Errors { get; private set; }
-    public T Value { get; private set; }
+    private readonly TValue? _value;
+    private readonly TError? _error;
 
-    public static Result<T> Failed(params string[] errors)
-        => new() { Success = false, Errors = errors };
+    public bool IsSuccess => !IsError;
+    public bool IsError { get; }
+    public TValue Value => _value;
+    public TError Error => _error;
 
-    public static Result<T> Successful(T value)
-        => new() { Success = true, Value = value };
+    private Result(TValue value)
+    {
+        IsError = false;
+        _value = value;
+        _error = default;
+    }
 
-    public static implicit operator Result<T>(T value) => Result<T>.Successful(value);
+    private Result(TError error)
+    {
+        IsError = true;
+        _value = default;
+        _error = error;
+    }
+
+    public static Result<TValue, TError> Successful(TValue value)
+        => new(value);
+
+    public static Result<TValue, TError> Failed(TError error)
+        => new(error);
+
+    public static implicit operator Result<TValue, TError>(TValue value) => new(value);
+    public static implicit operator Result<TValue, TError>(TError error) => new(error);
 }

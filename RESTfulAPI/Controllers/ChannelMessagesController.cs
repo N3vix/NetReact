@@ -78,11 +78,11 @@ public class ChannelMessagesController : ControllerBase
         return UnpuckResult(result);
     }
 
-    private IActionResult UnpuckResult<TValue>(Result<TValue> result, Func<TValue, object> valueBuilder = null)
+    private IActionResult UnpuckResult<TValue, TError>(Result<TValue, TError> result, Func<TValue, object> valueBuilder = null)
     {
-        if (result.Success)
+        if (result.IsSuccess)
             return Ok(valueBuilder == null ? result.Value : valueBuilder(result.Value));
 
-        return BadRequest(new { Errors = result.Errors });
+        return BadRequest(new { Error = result.Error });
     }
 }

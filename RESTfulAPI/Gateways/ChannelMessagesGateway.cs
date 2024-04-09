@@ -25,10 +25,10 @@ public class ChannelMessagesGateway : IChannelMessagesGateway
         ServerFollowersRepository = serverFollowersRepository;
     }
 
-    public async Task<Result<string>> Add(string senderId, string channelId, string content, string image)
+    public async Task<Result<string, string>> Add(string senderId, string channelId, string content, string image)
     {
         var operationAllowed = await GetIsUserFollowingServer(senderId, channelId);
-        if (!operationAllowed) return Result<string>.Failed(UserNotFollowingError);
+        if (!operationAllowed) return Result<string, string>.Failed(UserNotFollowingError);
 
         var channelMessage = new ChannelMessage
         {
@@ -39,41 +39,45 @@ public class ChannelMessagesGateway : IChannelMessagesGateway
             Image = image
         };
 
-        return await MessagesRepository.Add(channelMessage);
+        var value = await MessagesRepository.Add(channelMessage);
+        return Result<string, string>.Successful(value);
     }
 
-    public async Task<Result<ChannelMessage>> Get(string senderId, string messageId)
+    public async Task<Result<ChannelMessage, string>> Get(string senderId, string messageId)
     {
         var message = await MessagesRepository.GetById(messageId);
 
         var operationAllowed = await GetIsUserFollowingServer(senderId, message.ChannelId);
-        if (!operationAllowed) return Result<ChannelMessage>.Failed(UserNotFollowingError);
+        if (!operationAllowed) return UserNotFollowingError;
 
         return message;
     }
 
-    public async Task<Result<IEnumerable<ChannelMessage>>> Get(string senderId, string channelId, int take)
+    public async Task<Result<IEnumerable<ChannelMessage>, string>> Get(string senderId, string channelId, int take)
     {
         var operationAllowed = await GetIsUserFollowingServer(senderId, channelId);
-        if (!operationAllowed) return Result<IEnumerable<ChannelMessage>>.Failed(UserNotFollowingError);
+        if (!operationAllowed) return Result<IEnumerable<ChannelMessage>, string>.Failed(UserNotFollowingError);
 
-        return Result<IEnumerable<ChannelMessage>>.Successful(await MessagesRepository.Get(channelId, take, 0));
+        var value = await MessagesRepository.Get(channelId, take, 0);
+        return Result<IEnumerable<ChannelMessage>, string>.Successful(value);
     }
 
-    public async Task<Result<IEnumerable<ChannelMessage>>> GetBefore(string senderId, string channelId, DateTime dateTime, int take)
+    public async Task<Result<IEnumerable<ChannelMessage>, string>> GetBefore(
+        string senderId, string channelId, DateTime dateTime, int take)
     {
         var operationAllowed = await GetIsUserFollowingServer(senderId, channelId);
-        if (!operationAllowed) return Result<IEnumerable<ChannelMessage>>.Failed(UserNotFollowingError);
+        if (!operationAllowed) return Result<IEnumerable<ChannelMessage>, string>.Failed(UserNotFollowingError);
 
-        return Result<IEnumerable<ChannelMessage>>.Successful(await MessagesRepository.GetBefore(dateTime, channelId, take));
+        var value = await MessagesRepository.GetBefore(dateTime, channelId, take);
+        return Result<IEnumerable<ChannelMessage>, string>.Successful(value);
     }
 
-    public async Task<Result<bool>> Update(string senderId, string messageId, string newContent)
+    public async Task<Result<bool, string>> Update(string senderId, string messageId, string newContent)
     {
         if (string.IsNullOrEmpty(newContent)) return false;
 
         var messageResult = await Get(senderId, messageId);
-        if (!messageResult.Success) return Result<bool>.Failed(messageResult.Errors);
+        if (!messageResult.IsSuccess) return messageResult.Error;
 
         var message = messageResult.Value;
         if (!senderId.Equals(message.SenderId)) return false;
@@ -83,10 +87,10 @@ public class ChannelMessagesGateway : IChannelMessagesGateway
         return await MessagesRepository.Edit(messageId, message);
     }
 
-    public async Task<Result<bool>> Delete(string senderId, string messageId)
+    public async Task<Result<bool, string>> Delete(string senderId, string messageId)
     {
         var messageResult = await Get(senderId, messageId);
-        if (!messageResult.Success) return Result<bool>.Failed(messageResult.Errors);
+        if (!messageResult.IsSuccess) return messageResult.Error;
 
         var message = messageResult.Value;
         if (!senderId.Equals(message.SenderId)) return false;
