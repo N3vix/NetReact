@@ -1,24 +1,33 @@
 version: '1'
 
 services:
-  mongo:
-    image: mongo
-    ports:
-      - '27017:27017'
-    volumes:
-      - dbdata:/data/db
-    networks:
-      - node-network
+  # mongo:
+  #   image: mongo
+  #   ports:
+  #     - '27017:27017'
+  #   volumes:
+  #     - dbdata:/data/db
+  #   networks:
+  #     - node-network
   
-  apiServer:
-    build: .
-    image: restfulapi
-    environment:
-      - name=value
+  # apiServer:
+  #   build: .
+  #   image: restfulapi
+  #   environment:
+  #     - name=value
 
-volumes:
-  dbdata:
+  front:
+    build:
+      context: ./reactchatapp
+      args:
+        - REACT_APP_API_ADDRESS=localhost:7153
+    image: reactchatapp:1.0
+    ports:
+      - '3000:3000'
 
-networks:
-  node-network:
-    driver: bridge
+# volumes:
+#   dbdata:
+
+# networks:
+#   node-network:
+#     driver: bridge
