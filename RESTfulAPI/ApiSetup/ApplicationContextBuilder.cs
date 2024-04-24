@@ -9,7 +9,8 @@ internal static class ApplicationContextBuilder
 {
     public static void SetupApplicationContext(this IServiceCollection services, IConfigurationManager config)
     {
-        services.AddSingleton<IMongoDbContext, MongoDbContext>(x => new MongoDbContext(config.GetConnectionString("MongoDB")));
+        services.AddSingleton<IMongoDbContext, MongoDbContext>(_ =>
+            new MongoDbContext(config.GetConnectionString("MongoDB")));
 
         services.AddDbContext<ApplicationContext>(options => ConfigureApplicationContextOptions(options, config));
 
@@ -20,6 +21,7 @@ internal static class ApplicationContextBuilder
         services.AddScoped<IChannelMessagesRepository, ChannelMessagesRepositoryMongoDb>();
     }
 
-    private static void ConfigureApplicationContextOptions(DbContextOptionsBuilder options, IConfigurationManager config)
+    private static void ConfigureApplicationContextOptions(DbContextOptionsBuilder options,
+        IConfigurationManager config)
         => options.UseSqlite(config.GetConnectionString("Database"));
 }
