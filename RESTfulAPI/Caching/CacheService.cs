@@ -14,22 +14,22 @@ internal class CacheService : ICacheService
     public async Task<T> GetData<T>(string key)
     {
         var value = await CacheConnection.Db.StringGetAsync(key);
-        if (string.IsNullOrEmpty(value))
-            return default;
-        return JsonConvert.DeserializeObject<T>(value);
+        return string.IsNullOrEmpty(value) 
+            ? default 
+            : JsonConvert.DeserializeObject<T>(value);
     }
 
     public async Task<bool> SetData<T>(string key, T value, DateTimeOffset expirationTime)
     {
-        TimeSpan expiryTime = expirationTime.DateTime.Subtract(DateTime.Now);
+        var expiryTime = expirationTime.DateTime.Subtract(DateTime.Now);
         var isSet = await CacheConnection.Db.StringSetAsync(key, JsonConvert.SerializeObject(value), expiryTime);
         return isSet;
     }
 
     public async Task<object> RemoveData(string key)
     {
-        bool _isKeyExist = CacheConnection.Db.KeyExists(key);
-        if (_isKeyExist == true)
+        var _isKeyExist = CacheConnection.Db.KeyExists(key);
+        if (_isKeyExist)
         {
             return await CacheConnection.Db.KeyDeleteAsync(key);
         }

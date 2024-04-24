@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Models;
+using Newtonsoft.Json;
 using RESTfulAPI.Caching;
 using RESTfulAPI.Repositories;
 
@@ -14,6 +15,11 @@ internal class ServersGateway : IServersGateway
     {
         ServersRepository = serversRepository;
         CacheService = cacheService;
+    }
+    
+    public async Task<string> CreateServer(string name)
+    {
+        return await ServersRepository.Add(new ServerDetails() { Id = Guid.NewGuid().ToString(), Name = name });
     }
 
     public async Task<IEnumerable<ServerDetails>> GetAllServers()

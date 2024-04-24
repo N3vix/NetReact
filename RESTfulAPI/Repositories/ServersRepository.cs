@@ -19,7 +19,7 @@ public class ServersRepository : IServersRepository
 
         await ApplicationContext.ServersDetails.AddAsync(serverDetails);
         await ApplicationContext.SaveChangesAsync();
-        return serverDetails.Id.ToString();
+        return serverDetails.Id;
     }
 
     public async Task Add(params ServerDetails[] serverDetails)

@@ -18,6 +18,12 @@ public class ServersController : ControllerBase
         Logger = logger;
         ServersGateway = serversGateway;
     }
+    
+    [HttpGet("[action]")]
+    public async Task<string> CreateServer([FromQuery] string name)
+    {
+        return await ServersGateway.CreateServer(name);
+    }
 
     [HttpGet("[action]")]
     public async Task<IEnumerable<ServerDetails>> GetAllServers()
