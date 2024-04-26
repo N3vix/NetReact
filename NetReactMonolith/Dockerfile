@@ -1,5 +1,3 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
@@ -11,6 +9,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["NetReactMonolith/NetReactMonolith.csproj", "NetReactMonolith/"]
 COPY ["Models/Models.csproj", "Models/"]
+COPY ["NetReact.ServiceSetup/NetReact.ServiceSetup.csproj", "NetReact.ServiceSetup/"]
 RUN dotnet restore "./NetReactMonolith/NetReactMonolith.csproj"
 COPY . .
 WORKDIR "/src/NetReactMonolith"

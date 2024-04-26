@@ -1,6 +1,8 @@
-﻿namespace NetReactMonolith.ApiSetup;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-internal static class CorsBuilder
+namespace NetReact.ServiceSetup;
+
+public static class CorsBuilder
 {
     public static void SetupCors(this IServiceCollection services)
     {

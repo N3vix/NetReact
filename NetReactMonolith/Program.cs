@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using NetReact.ServiceSetup;
 using NetReactMonolith.ApiSetup;
 using NetReactMonolith.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -14,7 +15,7 @@ services.AddSwaggerGen();
 services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 services.AddSignalR();
 
-services.SetupAuthorisation(config);
+services.SetupAuthentication(config);
 services.SetupCache(config);
 services.SetupApplicationContext(config);
 services.SetupGateways();

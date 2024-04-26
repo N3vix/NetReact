@@ -1,4 +1,4 @@
-﻿namespace NetReact.AuthService.Configurations;
+﻿namespace Models;
 
 public class JwtConfig
 {

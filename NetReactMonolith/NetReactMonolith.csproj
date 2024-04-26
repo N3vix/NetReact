@@ -33,6 +33,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Models\Models.csproj"/>
+        <ProjectReference Include="..\NetReact.ServiceSetup\NetReact.ServiceSetup.csproj" />
     </ItemGroup>
 
 </Project>

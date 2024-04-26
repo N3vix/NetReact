@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{05A11332
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetReact.AuthService", "NetReact.AuthService\NetReact.AuthService.csproj", "{2291AA27-1B6A-4BF0-AF9A-61BA466328EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetReact.ServiceSetup", "NetReact.ServiceSetup\NetReact.ServiceSetup.csproj", "{630CCC4E-4896-4227-A3C6-F9193CB0F10C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{2291AA27-1B6A-4BF0-AF9A-61BA466328EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2291AA27-1B6A-4BF0-AF9A-61BA466328EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2291AA27-1B6A-4BF0-AF9A-61BA466328EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{630CCC4E-4896-4227-A3C6-F9193CB0F10C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{630CCC4E-4896-4227-A3C6-F9193CB0F10C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{630CCC4E-4896-4227-A3C6-F9193CB0F10C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{630CCC4E-4896-4227-A3C6-F9193CB0F10C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

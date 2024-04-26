@@ -12,6 +12,7 @@ internal static class WebAppConfigurator
 
         // app.UseHttpsRedirection();
 
+        app.SetupAuthApi();
         app.UseAuthentication();
         app.UseAuthorization();
 
