@@ -3,7 +3,7 @@ using NetReactMonolith.Controllers;
 
 namespace NetReactMonolith.ApiSetup;
 
-internal static class ApplicationExtensions
+internal static class WebAppConfigurator
 {
     public static void Setup(this WebApplication app)
     {

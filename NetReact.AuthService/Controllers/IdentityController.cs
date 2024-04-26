@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace NetReactMonolith.Controllers;
+namespace NetReact.AuthService.Controllers;
 
 public class TokenGenerationRequest
 {

@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Models;
-using NetReactMonolith.Configurations;
+using NetReact.AuthService.Configurations;
 
-namespace NetReactMonolith.Controllers;
+namespace NetReact.AuthService.Controllers;
 
 [ApiController]
 [Route("[controller]")]
