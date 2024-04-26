@@ -1,0 +1,6 @@
+@NetReactMonolith_HostAddress = http://localhost:5284
+
+GET {{NetReactMonolith_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

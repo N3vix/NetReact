@@ -1,0 +1,6 @@
+@NetReact.AuthService_HostAddress = http://localhost:5092
+
+GET {{NetReact.AuthService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

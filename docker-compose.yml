@@ -23,7 +23,7 @@ services:
     image: netreactback
     build:
       context: .
-      dockerfile: ./RESTfulAPI/Dockerfile
+      dockerfile: ./NetReactMonolith/Dockerfile
     ports:
       - '7153:8080'
     environment:
