@@ -5,22 +5,12 @@ services:
   mongo:
     image: mongo
     ports:
-      - '27017:27017'
+      - '27018:27017'
     volumes:
       - dbdata:/data/db
-    
-  mongo-express:
-    image: mongo-express
-    ports:
-      - '8081:8081'
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
-    depends_on:
-      - mongo
   
-  apiServer:
-    image: netreactback
+  netReact-Monolith:
+    image: netreact-monolith
     build:
       context: .
       dockerfile: ./NetReactMonolith/Dockerfile
@@ -30,6 +20,14 @@ services:
       - ASPNETCORE_DBIMAGES=DBIMAGES
     depends_on:
       - mongo
+        
+  netReact-Auth:
+    image: netreact-authservice
+    build: 
+      context: .
+      dockerfile: ./NetReact.AuthService/Dockerfile
+    ports:
+      - '7154:8080'
 
 volumes:
   dbdata:

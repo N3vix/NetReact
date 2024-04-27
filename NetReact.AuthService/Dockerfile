@@ -22,4 +22,5 @@ RUN dotnet publish "NetReact.AuthService.csproj" -c $BUILD_CONFIGURATION -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY ["NetReact.AuthService/DB.db", "/app"]
 ENTRYPOINT ["dotnet", "NetReact.AuthService.dll"]
