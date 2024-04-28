@@ -11,7 +11,7 @@ internal static class ApplicationContextSetup
         services.AddSingleton<IMongoDbContext, MongoDbContext>(_ =>
             new MongoDbContext(config.GetConnectionString("MongoDB")));
 
-        services.AddSingleton<IMessagesRepository, MessagesRepository>();
+        services.AddSingleton<IConnectionsRepository, ConnectionsRepository>();
         services.AddScoped<IServersRepository, ServersRepositoryMongoDB>();
         services.AddScoped<IServerFollowersRepository, ServerFollowersRepositoryMongoDB>();
         services.AddScoped<IChannelsRepository, ChannelsRepositoryMongoDB>();

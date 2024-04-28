@@ -24,9 +24,6 @@
         </PackageReference>
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6"/>
         <PackageReference Include="MongoDB.Driver" Version="2.24.0"/>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-        <PackageReference Include="SIPSorcery" Version="6.2.1"/>
-        <PackageReference Include="SIPSorceryMedia.Encoders" Version="0.0.13"/>
         <PackageReference Include="StackExchange.Redis" Version="2.7.33"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>

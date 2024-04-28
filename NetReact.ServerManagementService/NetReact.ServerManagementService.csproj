@@ -9,7 +9,6 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.2"/>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
         <PackageReference Include="StackExchange.Redis" Version="2.7.33"/>
     </ItemGroup>
@@ -17,12 +16,6 @@
     <ItemGroup>
         <ProjectReference Include="..\Models\Models.csproj" />
         <ProjectReference Include="..\NetReact.ServiceSetup\NetReact.ServiceSetup.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 
 namespace NetReactMonolith.Caching;
 
@@ -16,13 +16,13 @@ internal class CacheService : ICacheService
         var value = await CacheConnection.Db.StringGetAsync(key);
         return string.IsNullOrEmpty(value) 
             ? default 
-            : JsonConvert.DeserializeObject<T>(value);
+            : JsonSerializer.Deserialize<T>(value);
     }
 
     public async Task<bool> SetData<T>(string key, T value, DateTimeOffset expirationTime)
     {
         var expiryTime = expirationTime.DateTime.Subtract(DateTime.Now);
-        var isSet = await CacheConnection.Db.StringSetAsync(key, JsonConvert.SerializeObject(value), expiryTime);
+        var isSet = await CacheConnection.Db.StringSetAsync(key, JsonSerializer.Serialize(value), expiryTime);
         return isSet;
     }
 
