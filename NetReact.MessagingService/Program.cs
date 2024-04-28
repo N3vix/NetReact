@@ -1,4 +1,4 @@
-using NetReact.AuthService.ApiSetup;
+using NetReact.MessagingService.ApiSetup;
 using NetReact.ServiceSetup;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,13 +10,11 @@ services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-services.SetupAuthorisation();
 services.SetupAuthentication(config);
 services.SetupApplicationContext(config);
 services.SetupCors();
 
 var app = builder.Build();
-app.SetupAuthApi();
 app.SetupCommonApi();
 
 app.Run();

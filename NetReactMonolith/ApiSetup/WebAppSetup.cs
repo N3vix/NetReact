@@ -1,23 +1,13 @@
 ﻿using Microsoft.Extensions.FileProviders;
+using NetReact.ServiceSetup;
 using NetReactMonolith.Controllers;
 
 namespace NetReactMonolith.ApiSetup;
 
-internal static class WebAppConfigurator
+internal static class WebAppSetup
 {
     public static void Setup(this WebApplication app)
     {
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-
-        // app.UseHttpsRedirection();
-
-        app.UseAuthentication();
-        app.UseAuthorization();
-
         var imagesFolderPath = AppContext.BaseDirectory + Environment.GetEnvironmentVariable("ASPNETCORE_DBIMAGES");
         var imagesDirectory = Directory.CreateDirectory(imagesFolderPath);
         // if (string.IsNullOrEmpty(imagesFolder))
@@ -28,11 +18,8 @@ internal static class WebAppConfigurator
             RequestPath = "/Attachments",
         });
 
-        app.MapControllers();
-
-        //app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
-        app.UseCors("reactApp");
-
         app.MapHub<ChatHub>("/chat");
+        
+        app.SetupCommonApi();
     }
 }

@@ -1,8 +1,11 @@
-﻿namespace NetReact.AuthService.ApiSetup;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
 
-internal static class WebAppConfigurator
+namespace NetReact.ServiceSetup;
+
+public static class WebAppConfigurator
 {
-    public static void Setup(this WebApplication app)
+    public static void SetupCommonApi(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())
         {
@@ -12,7 +15,6 @@ internal static class WebAppConfigurator
 
         // app.UseHttpsRedirection();
 
-        app.SetupAuthApi();
         app.UseAuthentication();
         app.UseAuthorization();
 

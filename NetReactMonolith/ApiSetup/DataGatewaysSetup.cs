@@ -2,7 +2,7 @@
 
 namespace NetReactMonolith.ApiSetup;
 
-internal static class DataGatewaysBuilder
+internal static class DataGatewaysSetup
 {
     public static void SetupGateways(this IServiceCollection services)
     {

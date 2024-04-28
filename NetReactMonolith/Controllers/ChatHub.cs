@@ -9,7 +9,6 @@ namespace NetReactMonolith.Controllers;
 [Authorize]
 public sealed class ChatHub : Hub
 {
-
     private ILogger<ChatHub> Logger { get; }
     private IMessagesRepository MessagesRepository { get; }
     private IChannelMessagesGateway MessagesGateway { get; }

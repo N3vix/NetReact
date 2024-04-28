@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetReact.AuthService", "Net
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetReact.ServiceSetup", "NetReact.ServiceSetup\NetReact.ServiceSetup.csproj", "{630CCC4E-4896-4227-A3C6-F9193CB0F10C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetReact.MessagingService", "NetReact.MessagingService\NetReact.MessagingService.csproj", "{A77289CB-C88E-45B1-8CCE-2E89AE2172B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{630CCC4E-4896-4227-A3C6-F9193CB0F10C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{630CCC4E-4896-4227-A3C6-F9193CB0F10C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{630CCC4E-4896-4227-A3C6-F9193CB0F10C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A77289CB-C88E-45B1-8CCE-2E89AE2172B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A77289CB-C88E-45B1-8CCE-2E89AE2172B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A77289CB-C88E-45B1-8CCE-2E89AE2172B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A77289CB-C88E-45B1-8CCE-2E89AE2172B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,7 @@
 
 namespace NetReactMonolith.ApiSetup;
 
-internal static class CacheBuilder
+internal static class CacheSetup
 {
     public static void SetupCache(this IServiceCollection services, IConfigurationManager config)
     {
