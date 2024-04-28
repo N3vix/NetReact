@@ -1,6 +1,6 @@
 ﻿using Models;
 
-namespace NetReactMonolith.Repositories.MongoDB
+namespace NetReact.ServerManagementService.Repositories
 {
     public interface IServerFollowersRepository
     {
