@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetReact.ServerManagementSe
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{5E911400-577F-434E-B77A-58DB7A4287C1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetReact.ChannelManagementService", "NetReact.ChannelManagementService\NetReact.ChannelManagementService.csproj", "{A618FE39-04B4-4324-BAD8-5C62722EE206}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{4D85C2C0-7192-4D09-BD24-1BC124D3278A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D85C2C0-7192-4D09-BD24-1BC124D3278A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D85C2C0-7192-4D09-BD24-1BC124D3278A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A618FE39-04B4-4324-BAD8-5C62722EE206}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A618FE39-04B4-4324-BAD8-5C62722EE206}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A618FE39-04B4-4324-BAD8-5C62722EE206}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A618FE39-04B4-4324-BAD8-5C62722EE206}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,5 +70,6 @@ Global
 		{2291AA27-1B6A-4BF0-AF9A-61BA466328EF} = {5E911400-577F-434E-B77A-58DB7A4287C1}
 		{4D85C2C0-7192-4D09-BD24-1BC124D3278A} = {5E911400-577F-434E-B77A-58DB7A4287C1}
 		{422BC6BD-FBFD-4391-B359-739A605978AC} = {5E911400-577F-434E-B77A-58DB7A4287C1}
+		{A618FE39-04B4-4324-BAD8-5C62722EE206} = {5E911400-577F-434E-B77A-58DB7A4287C1}
 	EndGlobalSection
 EndGlobal

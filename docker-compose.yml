@@ -16,6 +16,13 @@ services:
     volumes:
       - dbdata:/data/serversdb
   
+  channelsMongo:
+    image: mongo
+    ports:
+      - '27020:27017'
+    volumes:
+      - dbdata:/data/channelsdb
+  
   netReact-Monolith:
     image: netreact-monolith
     build:
@@ -45,6 +52,16 @@ services:
       - '7155:8080'
     depends_on:
       - serversMongo
+  
+  netReact-ChannelManagement:
+    image: netreact-channelmanagementservice
+    build:
+      context: .
+      dockerfile: ./NetReact.ChannelManagementService/Dockerfile
+    ports:
+      - '7156:8080'
+    depends_on:
+      - channelsMongo
 
 volumes:
   dbdata:
