@@ -1,6 +1,0 @@
-@NetReact.ServerManagementService_HostAddress = http://localhost:5185
-
-GET {{NetReact.ServerManagementService_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

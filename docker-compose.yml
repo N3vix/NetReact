@@ -9,6 +9,13 @@ services:
     volumes:
       - dbdata:/data/db
   
+  serversMongo:
+    image: mongo
+    ports:
+      - '27019:27017'
+    volumes:
+      - dbdata:/data/serversdb
+  
   netReact-Monolith:
     image: netreact-monolith
     build:
@@ -28,6 +35,16 @@ services:
       dockerfile: ./NetReact.AuthService/Dockerfile
     ports:
       - '7154:8080'
+    
+  netReact-ServerManagement:
+    image: netreact-servermanagementservice
+    build:
+      context: .
+      dockerfile: ./NetReact.ServerManagementService/Dockerfile
+    ports:
+      - '7155:8080'
+    depends_on:
+      - serversMongo
 
 volumes:
   dbdata:

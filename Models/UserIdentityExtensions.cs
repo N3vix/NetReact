@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
 
-namespace NetReactMonolith;
+namespace Models;
 
-internal static class UserIdentityExtensions
+public static class UserIdentityExtensions
 {
     public static string GetUserId(this ClaimsPrincipal user) 
         => user.Claims.First(c => c.Type == "userid").Value;

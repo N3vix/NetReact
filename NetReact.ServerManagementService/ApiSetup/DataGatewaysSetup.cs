@@ -1,9 +1,11 @@
-﻿// namespace NetReactMonolith.ApiSetup;
-//
-// internal static class DataGatewaysSetup
-// {
-//     public static void SetupGateways(this IServiceCollection services)
-//     {
-//         services.AddScoped<IMessagesGateway, MessagesGateway>();
-//     }
-// }
+﻿using NetReact.ServerManagementService.Gateways;
+
+namespace NetReact.ServerManagementService.ApiSetup;
+
+internal static class DataGatewaysSetup
+{
+    public static void SetupGateways(this IServiceCollection services)
+    {
+        services.AddScoped<IServersGateway, ServersGateway>();
+    }
+}

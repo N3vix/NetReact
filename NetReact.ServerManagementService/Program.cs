@@ -11,7 +11,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 services.SetupAuthentication(config);
+services.SetupCache(config);
 services.SetupApplicationContext(config);
+services.SetupGateways();
 services.SetupCors();
 
 var app = builder.Build();
