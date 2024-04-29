@@ -1,4 +1,4 @@
-﻿namespace NetReactMonolith.Gateways;
+﻿namespace NetReact.MessagingService.Gateways;
 
 internal class MessageMediaGetaway : IMessageMediaGetaway
 {
@@ -6,7 +6,7 @@ internal class MessageMediaGetaway : IMessageMediaGetaway
 
     public MessageMediaGetaway()
     {
-        ImagesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "DbImages");
+        ImagesPath = AppContext.BaseDirectory + Environment.GetEnvironmentVariable("ASPNETCORE_DBIMAGES");
     }
 
     public async Task<string> WriteAsync(IFormFile formFile)

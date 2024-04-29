@@ -1,4 +1,4 @@
-﻿namespace NetReactMonolith.Gateways;
+﻿namespace NetReact.MessagingService.Gateways;
 
 public interface IMessageMediaGetaway
 {

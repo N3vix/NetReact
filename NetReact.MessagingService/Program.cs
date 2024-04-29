@@ -1,3 +1,4 @@
+using NetReact.MessagingService;
 using NetReact.MessagingService.ApiSetup;
 using NetReact.ServiceSetup;
 
@@ -10,11 +11,17 @@ services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+services.Configure<ServiceUrls>(config.GetSection("ServiceUrls"));
+
+services.AddHttpClient<MessagesServiceHttpClient>().AddHeaderPropagation();
+services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
+
 services.SetupAuthentication(config);
 services.SetupApplicationContext(config);
 services.SetupCors();
 
 var app = builder.Build();
 app.SetupCommonApi();
+app.UseHeaderPropagation();
 
 app.Run();

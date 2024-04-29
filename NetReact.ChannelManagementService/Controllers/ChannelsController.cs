@@ -32,13 +32,10 @@ public class ChannelsController : ControllerBase
     public async Task<IActionResult> CreateChannel([FromBody] ChannelAddRequest request)
     {
         var userId = User.GetUserId();
-        var response = await _httpClient.GetIsFollowingServer(userId, request.ServerId);
-        if (!response.IsSuccessStatusCode)
-            return BadRequest(new { Error = "Server management service failed." });
 
-        var content = await response.Content.ReadAsStringAsync();
-        if (!bool.TryParse(content, out var result) || !result)
-            return BadRequest(new { Error = "Operation not allowed." });
+        var isFollowing = await IsFollowing(userId, request.ServerId);
+        if (isFollowing.IsError)
+            return BadRequest(new { Error = isFollowing.Error });
 
         var channelId = await _channelsGateway.CreateServer(request.ServerId, request.Name, request.Type);
         return Ok(channelId);
@@ -54,5 +51,31 @@ public class ChannelsController : ControllerBase
     public async Task<ChannelDetails> GetChannel([FromQuery] string id)
     {
         return await _channelsGateway.GetChannel(id);
+    }
+
+    [HttpGet("[action]")]
+    public async Task<IActionResult> GetIsFollowing([FromQuery] string userId, [FromQuery] string channelId)
+    {
+        var channelDetails = await _channelsGateway.GetChannel(channelId);
+        if (channelDetails == null) return NotFound("Channel not found.");
+
+        var isFollowing = await IsFollowing(userId, channelDetails.ServerId);
+        if (isFollowing.IsError)
+            return BadRequest(new { Error = isFollowing.Error });
+
+        return Ok(true);
+    }
+
+    private async Task<Result<bool, string>> IsFollowing(string userId, string serverId)
+    {
+        var response = await _httpClient.GetIsFollowingServer(userId, serverId);
+        if (!response.IsSuccessStatusCode)
+            return "Server management service failed.";
+
+        var content = await response.Content.ReadAsStringAsync();
+        if (!bool.TryParse(content, out var result) || !result)
+            return "Operation not allowed.";
+
+        return true;
     }
 }

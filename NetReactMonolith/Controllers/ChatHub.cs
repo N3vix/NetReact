@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Models;
-using NetReactMonolith.Gateways;
 using NetReactMonolith.Repositories;
 
 namespace NetReactMonolith.Controllers;

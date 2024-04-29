@@ -23,6 +23,13 @@ services:
     volumes:
       - dbchannels:/data/db
   
+  mongoMessages:
+    image: mongo
+    ports:
+      - '27021:27017'
+    volumes:
+      - dbmessages:/data/db
+  
   netReact-Monolith:
     image: netreact-monolith
     build:
@@ -30,8 +37,6 @@ services:
       dockerfile: ./NetReactMonolith/Dockerfile
     ports:
       - '7153:8080'
-    environment:
-      - ASPNETCORE_DBIMAGES=DBIMAGES
     depends_on:
       - mongoMonolith
         
@@ -64,8 +69,22 @@ services:
       - ServiceUrls__ServersService=http://netReact-ServerManagement:8080
     depends_on:
       - mongoChannels
+  
+  netReact-Messaging:
+    image: netreact-messagingservice
+    build:
+      context: .
+      dockerfile: ./NetReact.MessagingService/Dockerfile
+    ports:
+      - '7157:8080'
+    environment:
+      - ServiceUrls__ChannelsService=http://netReact-ChannelManagement:8080
+      - ASPNETCORE_DBIMAGES=DBIMAGES
+    depends_on:
+      - mongoMessages
 
 volumes:
   dbdata:
   dbservers:
   dbchannels:
+  dbmessages:

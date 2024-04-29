@@ -16,9 +16,7 @@ services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOpti
 services.AddSignalR();
 
 services.SetupAuthentication(config);
-services.SetupCache(config);
 services.SetupApplicationContext(config);
-services.SetupGateways();
 services.SetupCors();
 
 var app = builder.Build();
