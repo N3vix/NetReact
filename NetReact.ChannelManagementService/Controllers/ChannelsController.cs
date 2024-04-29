@@ -19,6 +19,10 @@ public class ChannelsController : ControllerBase
         ChannelServiceHttpClient httpClient,
         IChannelsGateway channelsGateway)
     {
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(channelsGateway);
+
         _logger = logger;
         _httpClient = httpClient;
         _channelsGateway = channelsGateway;
@@ -32,8 +36,11 @@ public class ChannelsController : ControllerBase
         if (!response.IsSuccessStatusCode)
             return BadRequest(new { Error = "Server management service failed." });
 
+        var content = await response.Content.ReadAsStringAsync();
+        if (!bool.TryParse(content, out var result) || !result)
+            return BadRequest(new { Error = "Operation not allowed." });
+
         var channelId = await _channelsGateway.CreateServer(request.ServerId, request.Name, request.Type);
-        
         return Ok(channelId);
     }
 

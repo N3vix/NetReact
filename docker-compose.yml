@@ -61,7 +61,7 @@ services:
     ports:
       - '7156:8080'
     environment:
-      - ServiceUrls__ServersService=http://netReact-ServerManagement:8080/
+      - ServiceUrls__ServersService=http://netReact-ServerManagement:8080
     depends_on:
       - mongoChannels
 
