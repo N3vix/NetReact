@@ -8,17 +8,17 @@ namespace NetReact.MessagingService.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Authorize]
-public class ChannelMessagesController : ControllerBase
+public class MessagesController : ControllerBase
 {
     private const string UserNotFollowingError = "The user does not follow the specified server";
 
-    private ILogger<ChannelMessagesController> Logger { get; }
+    private ILogger<MessagesController> Logger { get; }
     private MessagesServiceHttpClient HttpClient { get; }
     private IMessagesGateway MessagesGateway { get; }
     private IMessageMediaGetaway MessageMediaGetaway { get; }
 
-    public ChannelMessagesController(
-        ILogger<ChannelMessagesController> logger,
+    public MessagesController(
+        ILogger<MessagesController> logger,
         MessagesServiceHttpClient httpClient,
         IMessagesGateway messagesGateway,
         IMessageMediaGetaway messageMediaGetaway)

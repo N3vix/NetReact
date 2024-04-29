@@ -30,6 +30,7 @@ public static class AuthenticationServiceSetup
     {
         options.SaveToken = true;
         options.TokenValidationParameters = GetTokenValidationParameters(config);
+        options.Events = GetJwtBearerEvents();
     }
 
     private static TokenValidationParameters GetTokenValidationParameters(IConfigurationManager config)
@@ -45,5 +46,19 @@ public static class AuthenticationServiceSetup
             ValidateIssuerSigningKey = true,
             ValidateLifetime = true,
         };
+    }
+    
+    private static JwtBearerEvents GetJwtBearerEvents() => new() { OnMessageReceived = PopulateAccessToken };
+
+    private static Task PopulateAccessToken(MessageReceivedContext messageContext)
+    {
+        var accessToken = messageContext.Request.Query["access_token"];
+        var path = messageContext.HttpContext.Request.Path;
+        if (!string.IsNullOrEmpty(accessToken)
+            && path.StartsWithSegments("/chat"))
+        {
+            messageContext.Token = accessToken;
+        }
+        return Task.CompletedTask;
     }
 }

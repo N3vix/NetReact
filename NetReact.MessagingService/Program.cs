@@ -18,10 +18,11 @@ services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
 
 services.SetupAuthentication(config);
 services.SetupApplicationContext(config);
+services.SetupGateways();
 services.SetupCors();
 
 var app = builder.Build();
-app.SetupCommonApi();
+app.Setup();
 app.UseHeaderPropagation();
 
 app.Run();

@@ -82,6 +82,7 @@ services:
       - ASPNETCORE_DBIMAGES=DBIMAGES
     depends_on:
       - mongoMessages
+      - netReact-ChannelManagement
 
 volumes:
   dbdata:
