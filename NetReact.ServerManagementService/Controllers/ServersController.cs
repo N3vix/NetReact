@@ -18,7 +18,7 @@ public class ServersController : ControllerBase
         Logger = logger;
         ServersGateway = serversGateway;
     }
-    
+
     [HttpGet("[action]")]
     public async Task<string> CreateServer([FromQuery] string name)
     {
@@ -41,5 +41,11 @@ public class ServersController : ControllerBase
     public async Task<ServerDetails> GetServer([FromQuery] string id)
     {
         return await ServersGateway.GetServer(id);
+    }
+
+    [HttpGet("[action]")]
+    public async Task<bool> GetIsFollowing([FromQuery] string userId, [FromQuery] string serverId)
+    {
+        return await ServersGateway.GetIsFollowing(userId, serverId);
     }
 }

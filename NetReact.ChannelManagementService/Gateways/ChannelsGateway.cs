@@ -1,5 +1,6 @@
 ﻿using Models;
 using NetReact.ChannelManagementService.Repositories;
+using NetReact.ServiceSetup;
 
 namespace NetReact.ChannelManagementService.Gateways;
 

@@ -9,4 +9,5 @@ public interface IServersGateway
     Task<IEnumerable<ServerDetails>> GetAllServers();
     Task<IEnumerable<ServerDetails>> GetFollowedServers(string userId);
     Task<ServerDetails> GetServer([FromQuery] string id);
+    Task<bool> GetIsFollowing(string userId, string serverId);
 }

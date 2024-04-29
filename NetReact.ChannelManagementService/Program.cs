@@ -1,3 +1,4 @@
+using NetReact.ChannelManagementService;
 using NetReact.ChannelManagementService.ApiSetup;
 using NetReact.ServiceSetup;
 
@@ -10,6 +11,11 @@ services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+services.Configure<ServiceUrls>(config.GetSection("ServiceUrls"));
+
+services.AddHttpClient<ChannelServiceHttpClient>().AddHeaderPropagation();
+services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
+
 services.SetupAuthentication(config);
 services.SetupApplicationContext(config);
 services.SetupGateways();
@@ -17,5 +23,6 @@ services.SetupCors();
 
 var app = builder.Build();
 app.SetupCommonApi();
+app.UseHeaderPropagation();
 
 app.Run();

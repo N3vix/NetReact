@@ -8,11 +8,16 @@ namespace NetReact.ServerManagementService.Gateways;
 internal class ServersGateway : IServersGateway
 {
     private IServersRepository ServersRepository { get; }
+    private IServerFollowersRepository FollowersRepository { get; }
     private ICacheService CacheService { get; }
 
-    public ServersGateway(IServersRepository serversRepository, ICacheService cacheService)
+    public ServersGateway(
+        IServersRepository serversRepository,
+        IServerFollowersRepository followersRepository,
+        ICacheService cacheService)
     {
         ServersRepository = serversRepository;
+        FollowersRepository = followersRepository;
         CacheService = cacheService;
     }
     
@@ -52,5 +57,10 @@ internal class ServersGateway : IServersGateway
     public async Task<ServerDetails> GetServer([FromQuery] string id)
     {
         return await ServersRepository.GetById(id);
+    }
+    
+    public async Task<bool> GetIsFollowing(string userId, string serverId)
+    {
+        return await FollowersRepository.GetIsUserFollowingServer(userId, serverId);
     }
 }

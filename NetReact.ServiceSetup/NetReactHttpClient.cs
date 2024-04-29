@@ -1,4 +1,5 @@
-﻿using System.Net.Mime;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 
@@ -7,17 +8,18 @@ namespace NetReact.ServiceSetup;
 public class NetReactHttpClient
 {
     private readonly HttpClient _httpClient;
-    
-    protected NetReactHttpClient(HttpClient httpClient, string uri)
+
+    public NetReactHttpClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
-
-        _httpClient.BaseAddress = new Uri(uri);
     }
 
-    public async Task<HttpResponseMessage> Get(string suffixUri, params KeyValuePair<string, string>[] queryParams)
+    public async Task<HttpResponseMessage> Get(
+        string uri,
+        [StringSyntax("Uri")] string suffixUri,
+        params (string key, string value)[] queryParams)
     {
-        suffixUri = queryParams.Aggregate($"{suffixUri}?", (s, pair) => $"{s}&{pair.Key}={pair.Value}");
+        suffixUri = queryParams.Aggregate($"{uri}/{suffixUri}?", (s, pair) => $"{s}&{pair.key}={pair.value}");
 
         return await _httpClient.GetAsync(suffixUri);
     }
