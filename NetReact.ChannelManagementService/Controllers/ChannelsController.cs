@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using NetReact.ChannelManagementService.Gateways;
 using NetReact.ChannelManagementService.Repositories;
 
 namespace NetReact.ChannelManagementService.Controllers;
@@ -11,23 +12,31 @@ namespace NetReact.ChannelManagementService.Controllers;
 public class ChannelsController : ControllerBase
 {
     private ILogger<ChannelsController> Logger { get; }
-    private IChannelsRepository ChannelsRepository { get; }
+    private IChannelsGateway ChannelsGateway { get; }
 
-    public ChannelsController(ILogger<ChannelsController> logger, IChannelsRepository channelsRepository)
+    public ChannelsController(
+        ILogger<ChannelsController> logger,
+        IChannelsGateway channelsGateway)
     {
         Logger = logger;
-        ChannelsRepository = channelsRepository;
+        ChannelsGateway = channelsGateway;
+    }
+    
+    [HttpPost("[action]")]
+    public async Task<string> CreateChannel([FromBody] ChannelAddRequest request)
+    {
+        return await ChannelsGateway.CreateServer(request.ServerId, request.Name, request.Type);
     }
 
     [HttpGet("[action]")]
     public async Task<IEnumerable<ChannelDetails>> GetChannels([FromQuery] string serverId)
     {
-        return await ChannelsRepository.GetByServerId(serverId);
+        return await ChannelsGateway.GetChannels(serverId);
     }
 
     [HttpGet("[action]")]
     public async Task<ChannelDetails> GetChannel([FromQuery] string id)
     {
-        return await ChannelsRepository.GetById(id);
+        return await ChannelsGateway.GetChannel(id);
     }
 }

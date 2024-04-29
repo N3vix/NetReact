@@ -1,27 +1,27 @@
 version: '1'
 
 services:
-          
-  mongo:
+  
+  mongoMonolith:
     image: mongo
     ports:
       - '27018:27017'
     volumes:
       - dbdata:/data/db
   
-  serversMongo:
+  mongoServers:
     image: mongo
     ports:
       - '27019:27017'
     volumes:
-      - dbdata:/data/serversdb
+      - dbservers:/data/db
   
-  channelsMongo:
+  mongoChannels:
     image: mongo
     ports:
       - '27020:27017'
     volumes:
-      - dbdata:/data/channelsdb
+      - dbchannels:/data/db
   
   netReact-Monolith:
     image: netreact-monolith
@@ -33,7 +33,7 @@ services:
     environment:
       - ASPNETCORE_DBIMAGES=DBIMAGES
     depends_on:
-      - mongo
+      - mongoMonolith
         
   netReact-Auth:
     image: netreact-authservice
@@ -51,7 +51,7 @@ services:
     ports:
       - '7155:8080'
     depends_on:
-      - serversMongo
+      - mongoServers
   
   netReact-ChannelManagement:
     image: netreact-channelmanagementservice
@@ -61,7 +61,9 @@ services:
     ports:
       - '7156:8080'
     depends_on:
-      - channelsMongo
+      - mongoChannels
 
 volumes:
   dbdata:
+  dbservers:
+  dbchannels:
