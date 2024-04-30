@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace NetReactMonolith.Swagger;
+namespace NetReact.ServiceSetup.Swagger;
 
 public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
 {
@@ -10,7 +11,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
     {
         options.AddSecurityDefinition(
             "Bearer",
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new OpenApiSecurityScheme
             {
                 In = Microsoft.OpenApi.Models.ParameterLocation.Header,
                 Description = "Please provide a valid token",
@@ -21,7 +22,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
             });
 
         options.AddSecurityRequirement(
-            new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+            new OpenApiSecurityRequirement
             {
                 {
                     new OpenApiSecurityScheme

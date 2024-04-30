@@ -20,7 +20,6 @@ public class ChannelServiceHttpClient
         return await _httpClient.Get(
             _serviceUrlsOptions.Value.ServersService,
             "Servers/GetIsFollowing",
-            ("userId", userId),
             ("serverId", serverId));
     }
 }
