@@ -7,10 +7,13 @@ internal static class ApplicationContextBuilder
 {
     public static void SetupApplicationContext(this IServiceCollection services, IConfigurationManager config)
     {
-        services.AddDbContext<ApplicationContext>(options => ConfigureApplicationContextOptions(options, config));
+        var connections = new Connections();
+        config.GetSection(nameof(Connections)).Bind(connections);
+        services.AddDbContext<ApplicationContext>(options => ConfigureApplicationContextOptions(options, connections));
     }
 
-    private static void ConfigureApplicationContextOptions(DbContextOptionsBuilder options,
-        IConfigurationManager config)
-        => options.UseSqlite(config.GetConnectionString("Database"));
+    private static void ConfigureApplicationContextOptions(
+        DbContextOptionsBuilder options,
+        Connections connections)
+        => options.UseMySQL(connections.Database);
 }
