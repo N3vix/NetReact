@@ -1,0 +1,50 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-auth
+spec:
+  selector:
+    matchLabels:
+      app: db-auth
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: db-auth
+    spec:
+      containers:
+        - name: db-auth
+          image: mysql:latest
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+          ports:
+            - containerPort: 3306
+              name: db-auth
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: db-auth-claim
+            
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-auth
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+      nodePort: 30001
+      protocol: TCP
+  selector:
+    app: db-auth
+  type: NodePort
