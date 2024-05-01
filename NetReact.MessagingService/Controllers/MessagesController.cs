@@ -6,8 +6,8 @@ using NetReact.MessagingService.Gateways;
 namespace NetReact.MessagingService.Controllers;
 
 [ApiController]
-[Route("[controller]")]
 [Authorize]
+[Route("channel")]
 public class MessagesController : ControllerBase
 {
     private const string UserNotFollowingError = "The user does not follow the specified server";
@@ -33,7 +33,7 @@ public class MessagesController : ControllerBase
         MessageMediaGetaway = messageMediaGetaway;
     }
 
-    [HttpPost("[action]")]
+    [HttpPost("messages")]
     public async Task<IActionResult> Add([FromForm] ChannelMessageAddRequest request)
     {
         var userId = User.GetUserId();
@@ -48,50 +48,35 @@ public class MessagesController : ControllerBase
         return Ok(addedMessageId);
     }
 
-    [HttpPost("[action]")]
-    public async Task<IActionResult> GetById([FromBody] ChannelMessageGetByIdRequest request)
+    [HttpGet("{channelId}/messages/{messageId}")]
+    public async Task<IActionResult> GetById(string channelId, string messageId)
     {
         var userId = User.GetUserId();
 
-        var isFollowing = await IsFollowing(userId, request.ChannelId);
+        var isFollowing = await IsFollowing(userId, channelId);
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
         
-        var result = await MessagesGateway.Get(User.GetUserId(), request.MessageId);
+        var result = await MessagesGateway.Get(messageId);
 
         return Ok(result);
     }
 
-    [HttpPost("[action]")]
-    public async Task<IActionResult> Get([FromBody] ChannelMessageGetRequest request)
+    [HttpGet("{channelId}/messages")]
+    public async Task<IActionResult> Get(string channelId, [FromQuery] int take, [FromQuery] DateTime? from = null)
     {
         var userId = User.GetUserId();
 
-        var isFollowing = await IsFollowing(userId, request.ChannelId);
+        var isFollowing = await IsFollowing(userId, channelId);
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
         
-        var result = await MessagesGateway.Get(User.GetUserId(), request.ChannelId, request.Take);
+        var result = await MessagesGateway.Get(channelId, take, from);
 
         return Ok(result);
     }
 
-    [HttpPost("[action]")]
-    public async Task<IActionResult> GetBefore([FromBody] ChannelMessageGetRequest request)
-    {
-        var userId = User.GetUserId();
-
-        var isFollowing = await IsFollowing(userId, request.ChannelId);
-        if (isFollowing.IsError)
-            return BadRequest(new { Error = isFollowing.Error });
-        
-        var result =
-            await MessagesGateway.GetBefore(User.GetUserId(), request.ChannelId, request.DateTime, request.Take);
-
-        return Ok(result);
-    }
-
-    [HttpPost("[action]")]
+    [HttpPut("messages")]
     public async Task<IActionResult> Update([FromBody] ChannelMessageUpdateRequest request)
     {
         var userId = User.GetUserId();
@@ -105,7 +90,7 @@ public class MessagesController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("[action]")]
+    [HttpDelete("messages")]
     public async Task<IActionResult> Delete([FromBody] ChannelMessageDeleteRequest request)
     {        
         var userId = User.GetUserId();

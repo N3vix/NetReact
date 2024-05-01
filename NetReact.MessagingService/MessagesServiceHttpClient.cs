@@ -19,8 +19,6 @@ public class MessagesServiceHttpClient
     {
         return await _httpClient.Get(
             _serviceUrlsOptions.Value.ChannelsService,
-            "Channels/GetIsFollowing",
-            ("userId", userId),
-            ("channelId", channelId));
+            $"channels/{channelId}/user");
     }
 }

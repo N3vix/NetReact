@@ -6,8 +6,8 @@ using NetReact.ChannelManagementService.Gateways;
 namespace NetReact.ChannelManagementService.Controllers;
 
 [ApiController]
-[Route("[controller]")]
 [Authorize]
+[Route("channels")]
 public class ChannelsController : ControllerBase
 {
     private readonly ILogger<ChannelsController> _logger;
@@ -28,12 +28,10 @@ public class ChannelsController : ControllerBase
         _channelsGateway = channelsGateway;
     }
 
-    [HttpPost("[action]")]
+    [HttpPost("")]
     public async Task<IActionResult> CreateChannel([FromBody] ChannelAddRequest request)
     {
-        var userId = User.GetUserId();
-
-        var isFollowing = await IsFollowing(userId, request.ServerId);
+        var isFollowing = await IsFollowing(request.ServerId);
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
 
@@ -41,34 +39,34 @@ public class ChannelsController : ControllerBase
         return Ok(channelId);
     }
 
-    [HttpGet("[action]")]
-    public async Task<IEnumerable<ChannelDetails>> GetChannels([FromQuery] string serverId)
+    [HttpGet("{serverId}/all")]
+    public async Task<IEnumerable<ChannelDetails>> GetChannels(string serverId)
     {
         return await _channelsGateway.GetChannels(serverId);
     }
 
-    [HttpGet("[action]")]
-    public async Task<ChannelDetails> GetChannel([FromQuery] string id)
+    [HttpGet("{id}")]
+    public async Task<ChannelDetails> GetChannel(string id)
     {
         return await _channelsGateway.GetChannel(id);
     }
 
-    [HttpGet("[action]")]
-    public async Task<IActionResult> GetIsFollowing([FromQuery] string userId, [FromQuery] string channelId)
+    [HttpGet("{channelId}/user")]
+    public async Task<IActionResult> GetIsFollowing(string channelId)
     {
         var channelDetails = await _channelsGateway.GetChannel(channelId);
         if (channelDetails == null) return NotFound("Channel not found.");
 
-        var isFollowing = await IsFollowing(userId, channelDetails.ServerId);
+        var isFollowing = await IsFollowing(channelDetails.ServerId);
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
 
         return Ok(true);
     }
 
-    private async Task<Result<bool, string>> IsFollowing(string userId, string serverId)
+    private async Task<Result<bool, string>> IsFollowing(string serverId)
     {
-        var response = await _httpClient.GetIsFollowingServer(userId, serverId);
+        var response = await _httpClient.GetIsFollowingServer(serverId);
         if (!response.IsSuccessStatusCode)
             return "Server management service failed.";
 

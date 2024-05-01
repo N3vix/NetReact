@@ -15,11 +15,10 @@ public class ChannelServiceHttpClient
         _httpClient = new NetReactHttpClient(httpClient);
     }
 
-    public async Task<HttpResponseMessage> GetIsFollowingServer(string userId, string serverId)
+    public async Task<HttpResponseMessage> GetIsFollowingServer(string serverId)
     {
         return await _httpClient.Get(
             _serviceUrlsOptions.Value.ServersService,
-            "Servers/GetIsFollowing",
-            ("serverId", serverId));
+            $"servers/{serverId}/user");
     }
 }

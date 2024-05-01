@@ -7,6 +7,7 @@ namespace NetReact.ServerManagementService.Controllers;
 
 [ApiController]
 [Authorize]
+[Route("servers")]
 public class ServersController : ControllerBase
 {
     private ILogger<ServersController> Logger { get; }
@@ -18,31 +19,31 @@ public class ServersController : ControllerBase
         ServersGateway = serversGateway;
     }
 
-    [HttpPost("servers")]
-    public async Task<string> CreateServer([FromQuery] string name)
+    [HttpPost("")]
+    public async Task<string> CreateServer([FromBody] ServerAddRequest request)
     {
-        return await ServersGateway.CreateServer(name);
+        return await ServersGateway.CreateServer(request.Name);
     }
 
-    [HttpGet("servers")]
+    [HttpGet("")]
     public async Task<IEnumerable<ServerDetails>> GetAllServers()
     {
         return await ServersGateway.GetAllServers();
     }
 
-    [HttpGet("servers/user")]
+    [HttpGet("user")]
     public async Task<IEnumerable<ServerDetails>> GetFollowingServers()
     {
         return await ServersGateway.GetFollowedServers(User.GetUserId());
     }
 
-    [HttpGet("servers/{id}")]
+    [HttpGet("{id}")]
     public async Task<ServerDetails> GetServer(string id)
     {
         return await ServersGateway.GetServer(id);
     }
 
-    [HttpGet("servers/{serverId}/user")]
+    [HttpGet("{serverId}/user")]
     public async Task<bool> GetIsFollowing(string serverId)
     {
         return await ServersGateway.GetIsFollowing(User.GetUserId(), serverId);

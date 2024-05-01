@@ -30,27 +30,26 @@ public class MessagesGateway : IMessagesGateway
         return await MessagesRepository.Add(channelMessage);
     }
 
-    public async Task<ChannelMessage> Get(string senderId, string messageId)
+    public async Task<ChannelMessage> Get(string messageId)
     {
         return await MessagesRepository.GetById(messageId);
     }
 
-    public async Task<IEnumerable<ChannelMessage>> Get(string senderId, string channelId, int take)
+    public Task<IEnumerable<ChannelMessage>> Get(string channelId, int take, DateTime from)
     {
-        return await MessagesRepository.Get(channelId, take, 0);
+        throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<ChannelMessage>> GetBefore(
-        string senderId, string channelId, DateTime dateTime, int take)
+    public async Task<IEnumerable<ChannelMessage>> Get(string channelId, int take, DateTime? from = null)
     {
-        return await MessagesRepository.GetBefore(dateTime, channelId, take);
+        return await MessagesRepository.Get(channelId, take, from);
     }
 
     public async Task<bool> Update(string senderId, string messageId, string newContent)
     {
         if (string.IsNullOrEmpty(newContent)) return false;
 
-        var message = await Get(senderId, messageId);
+        var message = await Get(messageId);
         if (!senderId.Equals(message.SenderId)) return false;
 
         message.Content = newContent;
@@ -60,7 +59,7 @@ public class MessagesGateway : IMessagesGateway
 
     public async Task<bool> Delete(string senderId, string messageId)
     {
-        var message = await Get(senderId, messageId);
+        var message = await Get(messageId);
 
         if (!senderId.Equals(message.SenderId)) return false;
         return await MessagesRepository.Delete(messageId);

@@ -36,25 +36,12 @@ public class MessagesRepository : IMessagesRepository
         return message;
     }
 
-    public async Task<IEnumerable<ChannelMessage>> Get(string channelId, int take, int skip)
+    public async Task<IEnumerable<ChannelMessage>> Get(string channelId, int take, DateTime? from = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(channelId);
 
         var filter = Builders<ChannelMessage>.Filter.Eq(x => x.ChannelId, channelId);
-        var messages = await _mongoDbContext.Messages
-            .Find(filter)
-            .Limit(take)
-            .SortByDescending(x => x.Timestamp).ToListAsync();
-
-        return messages.OrderBy(x => x.Timestamp);
-    }
-
-    public async Task<IEnumerable<ChannelMessage>> GetBefore(DateTime dateTime, string channelId, int take)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(channelId);
-
-        var filter = Builders<ChannelMessage>.Filter.Eq(x => x.ChannelId, channelId);
-        filter &= Builders<ChannelMessage>.Filter.Lt(x => x.Timestamp, dateTime);
+        if(from != null) filter &= Builders<ChannelMessage>.Filter.Lt(x => x.Timestamp, from);
         var messages = await _mongoDbContext.Messages
             .Find(filter)
             .Limit(take)

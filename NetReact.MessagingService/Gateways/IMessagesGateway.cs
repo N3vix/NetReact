@@ -6,8 +6,7 @@ public interface IMessagesGateway
 {
     Task<string> Add(string senderId, string channelId, string content, string image);
     Task<bool> Delete(string senderId, string messageId);
-    Task<ChannelMessage> Get(string senderId, string messageId);
-    Task<IEnumerable<ChannelMessage>> Get(string senderId, string channelId, int take);
-    Task<IEnumerable<ChannelMessage>> GetBefore(string senderId, string channelId, DateTime dateTime, int take);
+    Task<ChannelMessage> Get(string messageId);
+    Task<IEnumerable<ChannelMessage>> Get(string channelId, int take,  DateTime? from = null);
     Task<bool> Update(string senderId, string messageId, string newContent);
 }
