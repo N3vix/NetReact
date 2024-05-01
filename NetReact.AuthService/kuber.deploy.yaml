@@ -1,0 +1,22 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netreact-auth
+spec:
+  selector:
+    matchLabels:
+      app: netreact-auth
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: netreact-auth
+    spec:
+      containers:
+      - name: netreact-auth
+        image: netreact-authservice:1.0
+        ports:
+          - containerPort: 8080
+        env:
+          - name: Connections__Database
+            value: "Server=db-auth;port=3306;database=db;user=root;password=password"

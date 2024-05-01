@@ -49,7 +49,7 @@ services:
       context: .
       dockerfile: ./NetReact.AuthService/Dockerfile
     environment:
-      - "Connections__Database=Server=mssqlAuth;port=3306;database=db;user=user;password=password"
+      - "Connections__Database=Server=mssqlAuth;port=3306;database=db;user=root;password=password"
     ports:
       - '7154:8080'
     depends_on:

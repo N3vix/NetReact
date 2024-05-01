@@ -1,11 +1,11 @@
 ﻿apiVersion: v1
 kind: Service
 metadata:
-  name: netreact.authservice
+  name: netreact-authservice
 spec:
   type: LoadBalancer
   selector:
-    app: netreact.authservice
+    app: netreact-auth
   ports:
-    - port: 80
+    - port: 7154
       targetPort: 8080
