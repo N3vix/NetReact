@@ -60,6 +60,9 @@ services:
     build:
       context: .
       dockerfile: ./NetReact.ServerManagementService/Dockerfile
+    environment:
+      - Connections__Database=mongodb://mongoServers:27017/
+      - Connections__Redis=127.0.0.1:6379
     ports:
       - '7155:8080'
     depends_on:
@@ -73,7 +76,8 @@ services:
     ports:
       - '7156:8080'
     environment:
-      - ServiceUrls__ServersService=http://netReact-ServerManagement:8080
+      - Connections__ServersService=http://netReact-ServerManagement:8080
+      - Connections__Database=mongodb://mongoChannels:27017/
     depends_on:
       - mongoChannels
 
@@ -85,7 +89,8 @@ services:
     ports:
       - '7157:8080'
     environment:
-      - ServiceUrls__ChannelsService=http://netReact-ChannelManagement:8080
+      - Connections__ChannelsService=http://netReact-ChannelManagement:8080
+      - Connections__Database=mongodb://mongoMessages:27017/
       - ASPNETCORE_DBIMAGES=DBIMAGES
     depends_on:
       - mongoMessages

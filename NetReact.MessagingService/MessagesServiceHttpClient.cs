@@ -6,9 +6,9 @@ namespace NetReact.MessagingService;
 public class MessagesServiceHttpClient
 {
     private readonly NetReactHttpClient _httpClient;
-    private readonly IOptions<ServiceUrls> _serviceUrlsOptions;
+    private readonly IOptions<Connections> _serviceUrlsOptions;
 
-    public MessagesServiceHttpClient(HttpClient httpClient, IOptions<ServiceUrls> serviceUrlsOptions)
+    public MessagesServiceHttpClient(HttpClient httpClient, IOptions<Connections> serviceUrlsOptions)
     {
         _serviceUrlsOptions = serviceUrlsOptions;
 

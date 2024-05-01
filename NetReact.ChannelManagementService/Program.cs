@@ -11,7 +11,7 @@ services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-services.Configure<ServiceUrls>(config.GetSection("ServiceUrls"));
+services.Configure<Connections>(config.GetSection("Connections"));
 
 services.AddHttpClient<ChannelServiceHttpClient>().AddHeaderPropagation();
 services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));

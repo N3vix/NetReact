@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using NetReact.ServerManagementService;
 using NetReact.ServerManagementService.ApiSetup;
 using NetReact.ServiceSetup;
 using NetReact.ServiceSetup.Swagger;
@@ -13,6 +14,8 @@ services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+
+services.Configure<Connections>(config.GetSection("Connections"));
 
 services.SetupAuthentication(config);
 services.SetupCache(config);

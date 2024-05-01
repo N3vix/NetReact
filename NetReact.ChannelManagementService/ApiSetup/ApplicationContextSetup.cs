@@ -7,8 +7,10 @@ internal static class ApplicationContextSetup
 {
     public static void SetupApplicationContext(this IServiceCollection services, IConfigurationManager config)
     {
-        services.AddSingleton<IMongoDbContext, MongoDbContext>(_ =>
-            new MongoDbContext(config.GetConnectionString("MongoDB")));
+        var connections = new Connections();
+        config.GetSection(nameof(Connections)).Bind(connections);
+
+        services.AddSingleton<IMongoDbContext, MongoDbContext>(_ => new MongoDbContext(connections.Database));
 
         services.AddScoped<IChannelsRepository, ChannelsRepository>();
     }

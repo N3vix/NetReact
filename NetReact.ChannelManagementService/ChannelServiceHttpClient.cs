@@ -6,9 +6,9 @@ namespace NetReact.ChannelManagementService;
 public class ChannelServiceHttpClient
 {
     private readonly NetReactHttpClient _httpClient;
-    private readonly IOptions<ServiceUrls> _serviceUrlsOptions;
+    private readonly IOptions<Connections> _serviceUrlsOptions;
 
-    public ChannelServiceHttpClient(HttpClient httpClient, IOptions<ServiceUrls> serviceUrlsOptions)
+    public ChannelServiceHttpClient(HttpClient httpClient, IOptions<Connections> serviceUrlsOptions)
     {
         _serviceUrlsOptions = serviceUrlsOptions;
 

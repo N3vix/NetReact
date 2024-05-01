@@ -9,6 +9,7 @@ internal static class ApplicationContextBuilder
     {
         var connections = new Connections();
         config.GetSection(nameof(Connections)).Bind(connections);
+        
         services.AddDbContext<ApplicationContext>(options => ConfigureApplicationContextOptions(options, connections));
     }
 
