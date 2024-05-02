@@ -2,6 +2,7 @@
 kind: Deployment
 metadata:
   name: netreact-auth
+  namespace: netreact-auth
 spec:
   selector:
     matchLabels:
@@ -18,5 +19,10 @@ spec:
         ports:
           - containerPort: 8080
         env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: password
           - name: Connections__Database
-            value: "Server=db-auth;port=3306;database=db;user=root;password=password"
+            value: "Server=db-auth;port=3306;database=db;user=root;password=$(MYSQL_ROOT_PASSWORD)"

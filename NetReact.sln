@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{05A11332-5707-4DD1-9569-BADAFB5D9F0F}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
+		db-storage-class.yaml = db-storage-class.yaml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetReact.AuthService", "NetReact.AuthService\NetReact.AuthService.csproj", "{2291AA27-1B6A-4BF0-AF9A-61BA466328EF}"

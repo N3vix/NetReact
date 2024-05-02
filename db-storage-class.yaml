@@ -1,0 +1,10 @@
+﻿apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: db-sc
+provisioner: docker.io/hostpath
+volumeBindingMode: Immediate
+parameters:
+  type: gp2
+allowVolumeExpansion: true
+reclaimPolicy: Retain
