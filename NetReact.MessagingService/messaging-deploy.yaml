@@ -1,0 +1,42 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netreact-messaging
+  namespace: netreact-messaging
+spec:
+  selector:
+    matchLabels:
+      app: netreact-messaging
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: netreact-messaging
+    spec:
+      containers:
+        - name: netreact-messaging
+          image: netreact-messagingservice:1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: Connections__ChannelsService
+              value: "http://netreact-channelmanagementservice.netreact-channelmanagement.svc.cluster.local:7156"
+            - name: Connections__Database
+              value: "mongodb://db-messaging:27017/"
+            - name: ASPNETCORE_DBIMAGES
+              value: "DBIMAGES"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: netreact-messagingservice
+  namespace: netreact-messaging
+spec:
+  type: LoadBalancer
+  selector:
+    app: netreact-messaging
+  ports:
+    - port: 7157
+      targetPort: 8080

@@ -1,0 +1,46 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-channelmanagement
+  namespace: netreact-channelmanagement
+spec:
+  selector:
+    matchLabels:
+      app: db-channelmanagement
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: db-channelmanagement
+    spec:
+      containers:
+        - name: db-channelmanagement
+          image: mongo
+          ports:
+            - containerPort: 27017
+              name: db-cm
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /data/db
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: db-channelmanagement-claim
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-channelmanagement
+  namespace: netreact-channelmanagement
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+      nodePort: 30003
+      protocol: TCP
+  selector:
+    app: db-channelmanagement
+  type: NodePort

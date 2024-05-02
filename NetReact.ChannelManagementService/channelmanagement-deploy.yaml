@@ -1,0 +1,40 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netreact-channelmanagement
+  namespace: netreact-channelmanagement
+spec:
+  selector:
+    matchLabels:
+      app: netreact-channelmanagement
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: netreact-channelmanagement
+    spec:
+      containers:
+        - name: netreact-channelmanagement
+          image: netreact-channelmanagementservice:1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: Connections__ServersService
+              value: "http://netreact-servermanagementservice.netreact-servermanagement.svc.cluster.local:7155"
+            - name: Connections__Database
+              value: "mongodb://db-channelmanagement:27017/"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: netreact-channelmanagementservice
+  namespace: netreact-channelmanagement
+spec:
+  type: LoadBalancer
+  selector:
+    app: netreact-channelmanagement
+  ports:
+    - port: 7156
+      targetPort: 8080
