@@ -2,6 +2,7 @@
 kind: PersistentVolumeClaim
 metadata:
   name: db-auth-claim
+  namespace: netreact-auth
 spec:
   storageClassName: db-sc
   accessModes:

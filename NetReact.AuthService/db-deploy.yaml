@@ -2,6 +2,7 @@
 kind: Deployment
 metadata:
   name: db-auth
+  namespace: netreact-auth
 spec:
   selector:
     matchLabels:
@@ -32,13 +33,14 @@ spec:
         - name: mysql-persistent-storage
           persistentVolumeClaim:
             claimName: db-auth-claim
-            
+
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
   name: db-auth
+  namespace: netreact-auth
 spec:
   ports:
     - port: 3306

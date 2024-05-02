@@ -14,15 +14,30 @@ spec:
         app: netreact-auth
     spec:
       containers:
-      - name: netreact-auth
-        image: netreact-authservice:1.0
-        ports:
-          - containerPort: 8080
-        env:
-          - name: MYSQL_ROOT_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: db-secret
-                key: password
-          - name: Connections__Database
-            value: "Server=db-auth;port=3306;database=db;user=root;password=$(MYSQL_ROOT_PASSWORD)"
+        - name: netreact-auth
+          image: netreact-authservice:1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+            - name: Connections__Database
+              value: "Server=db-auth;port=3306;database=db;user=root;password=$(MYSQL_ROOT_PASSWORD)"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: netreact-authservice
+  namespace: netreact-auth
+spec:
+  type: LoadBalancer
+  selector:
+    app: netreact-auth
+  ports:
+    - port: 7154
+      targetPort: 8080
