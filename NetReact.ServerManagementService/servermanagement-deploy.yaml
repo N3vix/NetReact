@@ -1,0 +1,40 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netreact-servermanagement
+  namespace: netreact-servermanagement
+spec:
+  selector:
+    matchLabels:
+      app: netreact-servermanagement
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: netreact-servermanagement
+    spec:
+      containers:
+        - name: netreact-servermanagement
+          image: netreact-servermanagementservice:1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: Connections__Redis
+              value: "127.0.0.1:6379"
+            - name: Connections__Database
+              value: "mongodb://db-servermanagement:27017/"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: netreact-servermanagementservice
+  namespace: netreact-servermanagement
+spec:
+  type: LoadBalancer
+  selector:
+    app: netreact-servermanagement
+  ports:
+    - port: 7155
+      targetPort: 8080
