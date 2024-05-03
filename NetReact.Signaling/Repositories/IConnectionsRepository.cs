@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Models;
 
-namespace NetReactMonolith.Repositories;
+namespace NetReact.Signaling.Repositories;
 
 public interface IConnectionsRepository
 {

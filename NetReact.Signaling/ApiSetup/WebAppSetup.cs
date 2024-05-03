@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.FileProviders;
 using NetReact.ServiceSetup;
-using NetReactMonolith.Controllers;
+using NetReact.Signaling.Controllers;
 
-namespace NetReactMonolith.ApiSetup;
+namespace NetReact.Signaling.ApiSetup;
 
 internal static class WebAppSetup
 {

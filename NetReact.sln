@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34616.47
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetReactMonolith", "NetReactMonolith\NetReactMonolith.csproj", "{422BC6BD-FBFD-4391-B359-739A605978AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetReact.Signaling", "NetReact.Signaling\NetReact.Signaling.csproj", "{422BC6BD-FBFD-4391-B359-739A605978AC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Models", "Models\Models.csproj", "{05868F2B-B524-4958-9F99-F8F291E2266A}"
 EndProject

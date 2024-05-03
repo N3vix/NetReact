@@ -1,6 +1,6 @@
-﻿using NetReactMonolith.Repositories;
+﻿using NetReact.Signaling.Repositories;
 
-namespace NetReactMonolith.ApiSetup;
+namespace NetReact.Signaling.ApiSetup;
 
 internal static class ApplicationContextSetup
 {

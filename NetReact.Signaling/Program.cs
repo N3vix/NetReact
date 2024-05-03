@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using NetReact.ServiceSetup;
 using NetReact.ServiceSetup.Swagger;
-using NetReactMonolith.ApiSetup;
+using NetReact.Signaling.ApiSetup;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);

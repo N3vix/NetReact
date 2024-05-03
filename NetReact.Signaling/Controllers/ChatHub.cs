@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Models;
-using NetReactMonolith.Repositories;
+using NetReact.Signaling.Repositories;
 
-namespace NetReactMonolith.Controllers;
+namespace NetReact.Signaling.Controllers;
 
 [Authorize]
 public sealed class ChatHub : Hub
