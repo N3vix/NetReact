@@ -14,7 +14,7 @@ internal class MessageMediaGetaway : IMessageMediaGetaway
         if (formFile == null) return null;
 
         var newImagePath = Path.Combine(ImagesPath, formFile.FileName);
-        using var fileStream = new FileStream(newImagePath, FileMode.Create);
+        await using var fileStream = new FileStream(newImagePath, FileMode.Create);
         await formFile.CopyToAsync(fileStream);
         return formFile.FileName;
     }

@@ -2,7 +2,7 @@ version: '1'
 
 services:
   
-  messageBroker:
+  messageBrokerMessaging:
     image: rabbitmq:3-management-alpine
     ports:
       - 6000:5672
@@ -92,20 +92,41 @@ services:
 #    depends_on:
 #      - mongoChannels
 #
-#  netReact-Messaging:
-#    image: netreact-messagingservice
-#    build:
-#      context: .
-#      dockerfile: ./NetReact.MessagingService/Dockerfile
-#    ports:
-#      - '7157:8080'
-#    environment:
-#      - Connections__ChannelsService=http://netReact-ChannelManagement:8080
-#      - Connections__Database=mongodb://mongoMessages:27017/
-#      - ASPNETCORE_DBIMAGES=DBIMAGES
-#    depends_on:
-#      - mongoMessages
-#      - netReact-ChannelManagement
+  netReact-Messaging:
+    image: netreact-messagingservice
+    build:
+      context: .
+      dockerfile: ./NetReact.MessagingService/Dockerfile
+    ports:
+      - '7157:8080'
+    environment:
+      - Connections__ChannelsService=http://netReact-ChannelManagement:8080
+      - Connections__Database=mongodb://mongoMessages:27017/
+      - MessageBrokerConnection__HostName=localhost
+      - MessageBrokerConnection__Port=6000
+      - MessageBrokerConnection__UserName=root
+      - MessageBrokerConnection__Password=password
+      - ASPNETCORE_DBIMAGES=DBIMAGES
+    depends_on:
+      - mongoMessages
+      - netReact-ChannelManagement
+      - messageBrokerMessaging
+  
+  netReact-MessagingWorker:
+    image: netreact-messagingservice
+    build:
+      context: .
+      dockerfile: ./NetReact.MessagingService/Dockerfile
+    ports:
+      - '7157:8080'
+    environment:
+      - Connections__Database=mongodb://mongoMessages:27017/
+      - MessageBrokerConnection__HostName=localhost
+      - MessageBrokerConnection__Port=6000
+      - MessageBrokerConnection__UserName=root
+      - MessageBrokerConnection__Password=password
+    depends_on:
+      - messageBrokerMessaging
 
 volumes:
   messageBroker:

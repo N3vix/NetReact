@@ -47,19 +47,18 @@ public class MessagesController : ControllerBase
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
 
+        var fileName = await MessageMediaGetaway.WriteAsync(request.Image);
+
         var messageCreated = new ChannelMessageCreated
         {
             SenderId = userId,
             ChannelId = request.ChannelId,
             Content = request.Content,
-            Image = GetByteArray(request.Image)
+            Image = fileName
         };
         _messageProducer.SendMessage(messageCreated);
 
-        var fileName = await MessageMediaGetaway.WriteAsync(request.Image);
-        var addedMessageId = await MessagesGateway.Add(userId, request.ChannelId, request.Content, fileName);
-
-        return Ok(addedMessageId);
+        return Ok();
     }
 
     [HttpGet("{channelId}/messages/{messageId}")]

@@ -1,7 +1,7 @@
 ﻿using Models;
-using NetReact.MessagingService.Repositories;
+using NetReact.MessagingWorker.Repositories;
 
-namespace NetReact.MessagingService.Gateways;
+namespace NetReact.MessagingWorker.Gateways;
 
 public class MessagesGateway : IMessagesGateway
 {
@@ -16,28 +16,23 @@ public class MessagesGateway : IMessagesGateway
         MessagesRepository = messagesRepository;
     }
 
-    // public async Task<string> Add(string senderId, string channelId, string content, string image)
-    // {
-    //     var channelMessage = new ChannelMessage
-    //     {
-    //         ChannelId = channelId,
-    //         SenderId = senderId,
-    //         Timestamp = DateTime.UtcNow,
-    //         Content = content,
-    //         Image = image
-    //     };
-    //
-    //     return await MessagesRepository.Add(channelMessage);
-    // }
+    public async Task<string> Add(string senderId, string channelId, string content, string image)
+    {
+        var channelMessage = new ChannelMessage
+        {
+            ChannelId = channelId,
+            SenderId = senderId,
+            Timestamp = DateTime.UtcNow,
+            Content = content,
+            Image = image
+        };
+
+        return await MessagesRepository.Add(channelMessage);
+    }
 
     public async Task<ChannelMessage> Get(string messageId)
     {
         return await MessagesRepository.GetById(messageId);
-    }
-
-    public Task<IEnumerable<ChannelMessage>> Get(string channelId, int take, DateTime from)
-    {
-        throw new NotImplementedException();
     }
 
     public async Task<IEnumerable<ChannelMessage>> Get(string channelId, int take, DateTime? from = null)

@@ -13,7 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 services.Configure<Connections>(config.GetSection("Connections"));
-services.Configure<MessageBrokerConnection>(config.GetSection("MessageBrokerConnection"));
+services.Configure<MessageBrokerConnectionConfig>(config.GetSection("MessageBrokerConnection"));
 
 services.AddHttpClient<MessagesServiceHttpClient>().AddHeaderPropagation();
 services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
