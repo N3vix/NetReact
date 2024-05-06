@@ -5,7 +5,7 @@ using RabbitMQ.Client;
 
 namespace NetReact.MessageBroker;
 
-public abstract class MessageBrokerProducerBase : MessageBrokerBase, IMessageProducer
+public abstract class MessageBrokerProducerBase : MessageBrokerBase, IMessageBrokerProducer
 {
     protected MessageBrokerProducerBase(
         ILogger<MessageBrokerBase> logger, 

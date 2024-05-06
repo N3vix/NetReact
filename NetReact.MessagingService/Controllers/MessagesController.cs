@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using NetReact.MessageBroker;
+using NetReact.MessageBroker.SharedModels;
 using NetReact.MessagingService.Gateways;
 
 namespace NetReact.MessagingService.Controllers;
@@ -10,7 +12,7 @@ namespace NetReact.MessagingService.Controllers;
 [Route("channel")]
 public class MessagesController : ControllerBase
 {
-    private const string UserNotFollowingError = "The user does not follow the specified server";
+    private readonly IMessageBrokerProducer _messageProducer;
 
     private ILogger<MessagesController> Logger { get; }
     private MessagesServiceHttpClient HttpClient { get; }
@@ -21,11 +23,14 @@ public class MessagesController : ControllerBase
         ILogger<MessagesController> logger,
         MessagesServiceHttpClient httpClient,
         IMessagesGateway messagesGateway,
-        IMessageMediaGetaway messageMediaGetaway)
+        IMessageMediaGetaway messageMediaGetaway,
+        IMessageBrokerProducer messageProducer)
     {
+        _messageProducer = messageProducer;
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(messageMediaGetaway);
+        ArgumentNullException.ThrowIfNull(messageProducer);
 
         Logger = logger;
         HttpClient = httpClient;
@@ -42,6 +47,15 @@ public class MessagesController : ControllerBase
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
 
+        var messageCreated = new ChannelMessageCreated
+        {
+            SenderId = userId,
+            ChannelId = request.ChannelId,
+            Content = request.Content,
+            Image = GetByteArray(request.Image)
+        };
+        _messageProducer.SendMessage(messageCreated);
+
         var fileName = await MessageMediaGetaway.WriteAsync(request.Image);
         var addedMessageId = await MessagesGateway.Add(userId, request.ChannelId, request.Content, fileName);
 
@@ -56,7 +70,7 @@ public class MessagesController : ControllerBase
         var isFollowing = await IsFollowing(userId, channelId);
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
-        
+
         var result = await MessagesGateway.Get(messageId);
 
         return Ok(result);
@@ -70,7 +84,7 @@ public class MessagesController : ControllerBase
         var isFollowing = await IsFollowing(userId, channelId);
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
-        
+
         var result = await MessagesGateway.Get(channelId, take, from);
 
         return Ok(result);
@@ -84,7 +98,7 @@ public class MessagesController : ControllerBase
         var isFollowing = await IsFollowing(userId, request.ChannelId);
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
-        
+
         var result = await MessagesGateway.Update(User.GetUserId(), request.MessageId, request.Content);
 
         return Ok(result);
@@ -92,18 +106,18 @@ public class MessagesController : ControllerBase
 
     [HttpDelete("messages")]
     public async Task<IActionResult> Delete([FromBody] ChannelMessageDeleteRequest request)
-    {        
+    {
         var userId = User.GetUserId();
 
         var isFollowing = await IsFollowing(userId, request.ChannelId);
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
-        
+
         var result = await MessagesGateway.Delete(User.GetUserId(), request.MessageId);
 
         return Ok(result);
-    }    
-    
+    }
+
     private async Task<Result<bool, string>> IsFollowing(string userId, string channelId)
     {
         var response = await HttpClient.GetIsFollowingServer(userId, channelId);
@@ -115,5 +129,14 @@ public class MessagesController : ControllerBase
             return "Operation not allowed.";
 
         return true;
+    }
+
+    private byte[]? GetByteArray(IFormFile? formFile)
+    {
+        if (formFile == null)
+            return null;
+        using var stream = new MemoryStream();
+        formFile.CopyTo(stream);
+        return stream.ToArray();
     }
 }

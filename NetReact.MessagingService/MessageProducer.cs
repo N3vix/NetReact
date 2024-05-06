@@ -1,15 +1,15 @@
 ﻿using NetReact.MessageBroker;
 
-namespace NetReact.MessagingWorker;
+namespace NetReact.MessagingService;
 
-internal class MessageConsumer : MessageBrokerConsumerBase
+internal class MessageProducer : MessageBrokerProducerBase
 {
     protected override string ExchangeKey => "testExchange";
     protected override string QueueKey => "testQueue";
     protected override string RoutingKey => "testRoute";
 
-    public MessageConsumer(
-        ILogger<MessageBrokerBase> logger, 
+    public MessageProducer(
+        ILogger<MessageBrokerBase> logger,
         MessageBrokerConnection connection)
         : base(logger, connection)
     { }

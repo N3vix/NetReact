@@ -1,3 +1,4 @@
+using NetReact.MessageBroker;
 using NetReact.MessagingService;
 using NetReact.MessagingService.ApiSetup;
 using NetReact.ServiceSetup;
@@ -12,6 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 services.Configure<Connections>(config.GetSection("Connections"));
+services.Configure<MessageBrokerConnection>(config.GetSection("MessageBrokerConnection"));
 
 services.AddHttpClient<MessagesServiceHttpClient>().AddHeaderPropagation();
 services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
@@ -19,6 +21,7 @@ services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
 services.SetupAuthentication(config);
 services.SetupApplicationContext(config);
 services.SetupGateways();
+services.SetupMessageBroker();
 services.SetupCors();
 
 var app = builder.Build();
