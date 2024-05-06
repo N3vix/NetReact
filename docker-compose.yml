@@ -2,101 +2,113 @@ version: '1'
 
 services:
   
-  mssqlAuth:
-    image: mysql
+  messageBroker:
+    image: rabbitmq:3-management-alpine
     ports:
-      - '27018:3306'
+      - 6000:5672
+      - 6001:15672
     environment:
-      MYSQL_DATABASE: 'db'
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: 'password'
+      - "RABBITMQ_DEFAULT_USER=root"
+      - "RABBITMQ_DEFAULT_PASS=password"
     volumes:
-      - dbauth:/var/lib/mysql
-  
-  mongoServers:
-    image: mongo
-    ports:
-      - '27019:27017'
-    volumes:
-      - dbservers:/data/db
+      - messageBroker:/var/lib/rabbitmq/
 
-  mongoChannels:
-    image: mongo
-    ports:
-      - '27020:27017'
-    volumes:
-      - dbchannels:/data/db
-
-  mongoMessages:
-    image: mongo
-    ports:
-      - '27021:27017'
-    volumes:
-      - dbmessages:/data/db
-
-  netReact-Monolith:
-    image: netreact-monolith
-    build:
-      context: .
-      dockerfile: ./NetReactMonolith/Dockerfile
-    ports:
-      - '7153:8080'
-
-  netReact-Auth:
-    image: netreact-authservice
-    build: 
-      context: .
-      dockerfile: ./NetReact.AuthService/Dockerfile
-    environment:
-      - "Connections__Database=Server=mssqlAuth;port=3306;database=db;user=root;password=password"
-    ports:
-      - '7154:8080'
-    depends_on:
-      - mssqlAuth
-
-  netReact-ServerManagement:
-    image: netreact-servermanagementservice
-    build:
-      context: .
-      dockerfile: ./NetReact.ServerManagementService/Dockerfile
-    environment:
-      - Connections__Database=mongodb://mongoServers:27017/
-      - Connections__Redis=127.0.0.1:6379
-    ports:
-      - '7155:8080'
-    depends_on:
-      - mongoServers
-
-  netReact-ChannelManagement:
-    image: netreact-channelmanagementservice
-    build:
-      context: .
-      dockerfile: ./NetReact.ChannelManagementService/Dockerfile
-    ports:
-      - '7156:8080'
-    environment:
-      - Connections__ServersService=http://netReact-ServerManagement:8080
-      - Connections__Database=mongodb://mongoChannels:27017/
-    depends_on:
-      - mongoChannels
-
-  netReact-Messaging:
-    image: netreact-messagingservice
-    build:
-      context: .
-      dockerfile: ./NetReact.MessagingService/Dockerfile
-    ports:
-      - '7157:8080'
-    environment:
-      - Connections__ChannelsService=http://netReact-ChannelManagement:8080
-      - Connections__Database=mongodb://mongoMessages:27017/
-      - ASPNETCORE_DBIMAGES=DBIMAGES
-    depends_on:
-      - mongoMessages
-      - netReact-ChannelManagement
+#  mssqlAuth:
+#    image: mysql
+#    ports:
+#      - '27018:3306'
+#    environment:
+#      MYSQL_DATABASE: 'db'
+#      MYSQL_USER: 'user'
+#      MYSQL_PASSWORD: 'password'
+#      MYSQL_ROOT_PASSWORD: 'password'
+#    volumes:
+#      - dbauth:/var/lib/mysql
+#  
+#  mongoServers:
+#    image: mongo
+#    ports:
+#      - '27019:27017'
+#    volumes:
+#      - dbservers:/data/db
+#
+#  mongoChannels:
+#    image: mongo
+#    ports:
+#      - '27020:27017'
+#    volumes:
+#      - dbchannels:/data/db
+#
+#  mongoMessages:
+#    image: mongo
+#    ports:
+#      - '27021:27017'
+#    volumes:
+#      - dbmessages:/data/db
+#
+#  netReact-Monolith:
+#    image: netreact-monolith
+#    build:
+#      context: .
+#      dockerfile: ./NetReactMonolith/Dockerfile
+#    ports:
+#      - '7153:8080'
+#
+#  netReact-Auth:
+#    image: netreact-authservice
+#    build: 
+#      context: .
+#      dockerfile: ./NetReact.AuthService/Dockerfile
+#    environment:
+#      - "Connections__Database=Server=mssqlAuth;port=3306;database=db;user=root;password=password"
+#    ports:
+#      - '7154:8080'
+#    depends_on:
+#      - mssqlAuth
+#
+#  netReact-ServerManagement:
+#    image: netreact-servermanagementservice
+#    build:
+#      context: .
+#      dockerfile: ./NetReact.ServerManagementService/Dockerfile
+#    environment:
+#      - Connections__Database=mongodb://mongoServers:27017/
+#      - Connections__Redis=127.0.0.1:6379
+#    ports:
+#      - '7155:8080'
+#    depends_on:
+#      - mongoServers
+#
+#  netReact-ChannelManagement:
+#    image: netreact-channelmanagementservice
+#    build:
+#      context: .
+#      dockerfile: ./NetReact.ChannelManagementService/Dockerfile
+#    ports:
+#      - '7156:8080'
+#    environment:
+#      - Connections__ServersService=http://netReact-ServerManagement:8080
+#      - Connections__Database=mongodb://mongoChannels:27017/
+#    depends_on:
+#      - mongoChannels
+#
+#  netReact-Messaging:
+#    image: netreact-messagingservice
+#    build:
+#      context: .
+#      dockerfile: ./NetReact.MessagingService/Dockerfile
+#    ports:
+#      - '7157:8080'
+#    environment:
+#      - Connections__ChannelsService=http://netReact-ChannelManagement:8080
+#      - Connections__Database=mongodb://mongoMessages:27017/
+#      - ASPNETCORE_DBIMAGES=DBIMAGES
+#    depends_on:
+#      - mongoMessages
+#      - netReact-ChannelManagement
 
 volumes:
+  messageBroker:
   dbauth:
   dbservers:
   dbchannels:
