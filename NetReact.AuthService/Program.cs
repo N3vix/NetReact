@@ -1,4 +1,5 @@
 using NetReact.AuthService.ApiSetup;
+using NetReact.AuthService.Controllers;
 using NetReact.ServiceSetup;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,10 +14,11 @@ builder.Services.AddSwaggerGen();
 services.SetupAuthorisation();
 services.SetupAuthentication(config);
 services.SetupApplicationContext(config);
+services.SetupServices();
 services.SetupCors();
 
 var app = builder.Build();
-app.SetupAuthApi();
+app.SetupIdentityEndpoints();
 app.SetupCommonApi();
 
 app.Run();

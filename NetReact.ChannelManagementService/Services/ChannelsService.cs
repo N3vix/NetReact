@@ -1,14 +1,13 @@
 ﻿using Models;
 using NetReact.ChannelManagementService.Repositories;
-using NetReact.ServiceSetup;
 
-namespace NetReact.ChannelManagementService.Gateways;
+namespace NetReact.ChannelManagementService.Services;
 
-internal class ChannelsGateway : IChannelsGateway
+internal class ChannelsService : IChannelsService
 {
     private IChannelsRepository ChannelsRepository { get; }
 
-    public ChannelsGateway(IChannelsRepository channelsRepository)
+    public ChannelsService(IChannelsRepository channelsRepository)
     {
         ChannelsRepository = channelsRepository;
     }

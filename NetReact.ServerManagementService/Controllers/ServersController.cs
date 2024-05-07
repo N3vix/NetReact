@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using NetReact.ServerManagementService.Gateways;
+using NetReact.ServerManagementService.Services;
 
 namespace NetReact.ServerManagementService.Controllers;
 
@@ -11,41 +11,41 @@ namespace NetReact.ServerManagementService.Controllers;
 public class ServersController : ControllerBase
 {
     private ILogger<ServersController> Logger { get; }
-    private IServersGateway ServersGateway { get; }
+    private IServersService ServersService { get; }
 
-    public ServersController(ILogger<ServersController> logger, IServersGateway serversGateway)
+    public ServersController(ILogger<ServersController> logger, IServersService serversService)
     {
         Logger = logger;
-        ServersGateway = serversGateway;
+        ServersService = serversService;
     }
 
     [HttpPost("")]
     public async Task<string> CreateServer([FromBody] ServerAddRequest request)
     {
-        return await ServersGateway.CreateServer(request.Name);
+        return await ServersService.CreateServer(request.Name);
     }
 
     [HttpGet("")]
     public async Task<IEnumerable<ServerDetails>> GetAllServers()
     {
-        return await ServersGateway.GetAllServers();
+        return await ServersService.GetAllServers();
     }
 
     [HttpGet("user")]
     public async Task<IEnumerable<ServerDetails>> GetFollowingServers()
     {
-        return await ServersGateway.GetFollowedServers(User.GetUserId());
+        return await ServersService.GetFollowedServers(User.GetUserId());
     }
 
     [HttpGet("{id}")]
     public async Task<ServerDetails> GetServer(string id)
     {
-        return await ServersGateway.GetServer(id);
+        return await ServersService.GetServer(id);
     }
 
     [HttpGet("{serverId}/user")]
     public async Task<bool> GetIsFollowing(string serverId)
     {
-        return await ServersGateway.GetIsFollowing(User.GetUserId(), serverId);
+        return await ServersService.GetIsFollowing(User.GetUserId(), serverId);
     }
 }

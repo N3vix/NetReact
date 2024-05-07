@@ -3,15 +3,15 @@ using Models;
 using NetReact.ServerManagementService.Caching;
 using NetReact.ServerManagementService.Repositories;
 
-namespace NetReact.ServerManagementService.Gateways;
+namespace NetReact.ServerManagementService.Services;
 
-internal class ServersGateway : IServersGateway
+internal class ServersService : IServersService
 {
     private IServersRepository ServersRepository { get; }
     private IServerFollowersRepository FollowersRepository { get; }
     private ICacheService CacheService { get; }
 
-    public ServersGateway(
+    public ServersService(
         IServersRepository serversRepository,
         IServerFollowersRepository followersRepository,
         ICacheService cacheService)

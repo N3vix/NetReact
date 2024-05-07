@@ -1,10 +1,10 @@
-﻿namespace NetReact.MessagingService.Gateways;
+﻿namespace NetReact.MessagingService.Services;
 
-internal class MessageMediaGetaway : IMessageMediaGetaway
+internal class MessageMediaService : IMessageMediaService
 {
     private string ImagesPath { get; }
 
-    public MessageMediaGetaway()
+    public MessageMediaService()
     {
         ImagesPath = AppContext.BaseDirectory + Environment.GetEnvironmentVariable("ASPNETCORE_DBIMAGES");
     }

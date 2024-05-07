@@ -1,7 +1,8 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using NetReact.MessagingService.Gateways;
+using NetReact.MessagingService.Services;
+using NetReact.ServiceSetup;
 
 namespace NetReact.MessagingService.Controllers;
 
@@ -21,60 +22,60 @@ public static class ChannelMessagesEndpoints
     private static async Task<IResult> Add(
         [FromForm] ChannelMessageAddRequest request,
         ClaimsPrincipal user,
-        IMessagesGateway messagesGateway)
+        IMessagesService messagesService)
     {
         var userId = user.GetUserId();
         var image = GetByteArray(request.Image);
 
-        var result = await messagesGateway.Add(userId, request.ChannelId, request.Content, image);
-        return UnpuckResult(result);
+        var result = await messagesService.Add(userId, request.ChannelId, request.Content, image);
+        return result.UnpuckResult();
     }
 
     private static async Task<IResult> GetById(
         string channelId,
         string messageId,
         ClaimsPrincipal user,
-        IMessagesGateway messagesGateway)
+        IMessagesService messagesService)
     {
         var userId = user.GetUserId();
 
-        var result = await messagesGateway.Get(userId, channelId, messageId);
-        return UnpuckResult(result);
+        var result = await messagesService.Get(userId, channelId, messageId);
+        return result.UnpuckResult();
     }
 
     private static async Task<IResult> Get(
         string channelId,
         int take,
         ClaimsPrincipal user,
-        IMessagesGateway messagesGateway,
+        IMessagesService messagesService,
         DateTime? from = null)
     {
         var userId = user.GetUserId();
 
-        var result = await messagesGateway.Get(userId, channelId, take, from);
-        return UnpuckResult(result);
+        var result = await messagesService.Get(userId, channelId, take, from);
+        return result.UnpuckResult();
     }
 
     private static async Task<IResult> Update(
         [FromBody] ChannelMessageUpdateRequest request,
         ClaimsPrincipal user,
-        IMessagesGateway messagesGateway)
+        IMessagesService messagesService)
     {
         var userId = user.GetUserId();
 
-        var result = await messagesGateway.Update(userId, request.ChannelId, request.MessageId, request.Content);
-        return UnpuckResult(result);
+        var result = await messagesService.Update(userId, request.ChannelId, request.MessageId, request.Content);
+        return result.UnpuckResult();
     }
 
     private static async Task<IResult> Delete(
         [FromBody] ChannelMessageDeleteRequest request,
         ClaimsPrincipal user,
-        IMessagesGateway messagesGateway)
+        IMessagesService messagesService)
     {
         var userId = user.GetUserId();
 
-        var result = await messagesGateway.Delete(userId, request.ChannelId, request.MessageId);
-        return UnpuckResult(result);
+        var result = await messagesService.Delete(userId, request.ChannelId, request.MessageId);
+        return result.UnpuckResult();
     }
 
     private static byte[]? GetByteArray(IFormFile? formFile)
@@ -84,23 +85,5 @@ public static class ChannelMessagesEndpoints
         using var stream = new MemoryStream();
         formFile.CopyTo(stream);
         return stream.ToArray();
-    }
-
-    private static IResult UnpuckResult<TError>(Result<TError> result)
-    {
-        return result.IsSuccess
-            ? Results.Ok()
-            : Results.BadRequest(new { Error = result.Error });
-    }
-
-    private static IResult UnpuckResult<TValue, TError>(
-        Result<TValue, TError> result,
-        Func<TValue, object> valueBuilder = null)
-    {
-        return result.IsSuccess
-            ? Results.Ok(valueBuilder == null
-                ? result.Value
-                : valueBuilder(result.Value))
-            : Results.BadRequest(new { Error = result.Error });
     }
 }

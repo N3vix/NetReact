@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using NetReact.ChannelManagementService.Gateways;
+using NetReact.ChannelManagementService.Services;
 
 namespace NetReact.ChannelManagementService.Controllers;
 
@@ -12,20 +12,20 @@ public class ChannelsController : ControllerBase
 {
     private readonly ILogger<ChannelsController> _logger;
     private readonly ChannelServiceHttpClient _httpClient;
-    private readonly IChannelsGateway _channelsGateway;
+    private readonly IChannelsService _channelsService;
 
     public ChannelsController(
         ILogger<ChannelsController> logger,
         ChannelServiceHttpClient httpClient,
-        IChannelsGateway channelsGateway)
+        IChannelsService channelsService)
     {
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(httpClient);
-        ArgumentNullException.ThrowIfNull(channelsGateway);
+        ArgumentNullException.ThrowIfNull(channelsService);
 
         _logger = logger;
         _httpClient = httpClient;
-        _channelsGateway = channelsGateway;
+        _channelsService = channelsService;
     }
 
     [HttpPost("")]
@@ -35,26 +35,26 @@ public class ChannelsController : ControllerBase
         if (isFollowing.IsError)
             return BadRequest(new { Error = isFollowing.Error });
 
-        var channelId = await _channelsGateway.CreateServer(request.ServerId, request.Name, request.Type);
+        var channelId = await _channelsService.CreateServer(request.ServerId, request.Name, request.Type);
         return Ok(channelId);
     }
 
     [HttpGet("{serverId}/all")]
     public async Task<IEnumerable<ChannelDetails>> GetChannels(string serverId)
     {
-        return await _channelsGateway.GetChannels(serverId);
+        return await _channelsService.GetChannels(serverId);
     }
 
     [HttpGet("{id}")]
     public async Task<ChannelDetails> GetChannel(string id)
     {
-        return await _channelsGateway.GetChannel(id);
+        return await _channelsService.GetChannel(id);
     }
 
     [HttpGet("{channelId}/user")]
     public async Task<IActionResult> GetIsFollowing(string channelId)
     {
-        var channelDetails = await _channelsGateway.GetChannel(channelId);
+        var channelDetails = await _channelsService.GetChannel(channelId);
         if (channelDetails == null) return NotFound("Channel not found.");
 
         var isFollowing = await IsFollowing(channelDetails.ServerId);

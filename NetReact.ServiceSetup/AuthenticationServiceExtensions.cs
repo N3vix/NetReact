@@ -7,7 +7,7 @@ using Models;
 
 namespace NetReact.ServiceSetup;
 
-public static class AuthenticationServiceSetup
+public static class AuthenticationServiceExtensions
 {
     public static void SetupAuthentication(this IServiceCollection services, IConfigurationManager config)
     {

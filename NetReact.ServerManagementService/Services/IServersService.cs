@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Models;
 
-namespace NetReact.ServerManagementService.Gateways;
+namespace NetReact.ServerManagementService.Services;
 
-public interface IServersGateway
+public interface IServersService
 {
     Task<string> CreateServer(string name);
     Task<IEnumerable<ServerDetails>> GetAllServers();

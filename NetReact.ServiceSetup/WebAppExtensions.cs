@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace NetReact.ServiceSetup;
 
-public static class WebAppConfigurator
+public static class WebAppExtensions
 {
     public static void SetupCommonApi(this WebApplication app)
     {

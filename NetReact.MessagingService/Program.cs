@@ -20,7 +20,7 @@ services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
 
 services.SetupAuthentication(config);
 services.SetupApplicationContext(config);
-services.SetupGateways();
+services.SetupServices();
 services.SetupMessageBroker();
 services.SetupCors();
 

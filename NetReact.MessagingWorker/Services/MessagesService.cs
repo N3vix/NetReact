@@ -1,15 +1,15 @@
 ﻿using Models;
 using NetReact.MessagingWorker.Repositories;
 
-namespace NetReact.MessagingWorker.Gateways;
+namespace NetReact.MessagingWorker.Services;
 
-public class MessagesGateway : IMessagesGateway
+public class MessagesService : IMessagesService
 {
-    private ILogger<MessagesGateway> Logger { get; }
+    private ILogger<MessagesService> Logger { get; }
     private IMessagesRepository MessagesRepository { get; }
 
-    public MessagesGateway(
-        ILogger<MessagesGateway> logger,
+    public MessagesService(
+        ILogger<MessagesService> logger,
         IMessagesRepository messagesRepository)
     {
         Logger = logger;

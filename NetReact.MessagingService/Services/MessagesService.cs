@@ -3,35 +3,35 @@ using NetReact.MessageBroker;
 using NetReact.MessageBroker.SharedModels;
 using NetReact.MessagingService.Repositories;
 
-namespace NetReact.MessagingService.Gateways;
+namespace NetReact.MessagingService.Services;
 
-public class MessagesGateway : IMessagesGateway
+public class MessagesService : IMessagesService
 {
     private readonly MessageBrokerChannelConnectionConfig _channelConnectionConfig
         = new() { ExchangeKey = "testExchange", QueueKey = "testQueue", RoutingKey = "testRoute" };
 
-    private readonly ILogger<MessagesGateway> _logger;
+    private readonly ILogger<MessagesService> _logger;
     private readonly IMessagesRepository _messagesRepository;
-    private readonly IMessageMediaGetaway _messageMediaGetaway;
+    private readonly IMessageMediaService _messageMediaService;
     private readonly MessagesServiceHttpClient _httpClient;
     private readonly IMessageBrokerProducer _messageProducer;
 
-    public MessagesGateway(
-        ILogger<MessagesGateway> logger,
+    public MessagesService(
+        ILogger<MessagesService> logger,
         IMessagesRepository messagesRepository,
-        IMessageMediaGetaway messageMediaGetaway,
+        IMessageMediaService messageMediaService,
         MessagesServiceHttpClient httpClient,
         IMessageBrokerProducerFactory messageProducer)
     {
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(messagesRepository);
-        ArgumentNullException.ThrowIfNull(messageMediaGetaway);
+        ArgumentNullException.ThrowIfNull(messageMediaService);
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(messageProducer);
 
         _logger = logger;
         _messagesRepository = messagesRepository;
-        _messageMediaGetaway = messageMediaGetaway;
+        _messageMediaService = messageMediaService;
         _httpClient = httpClient;
         _messageProducer = messageProducer.Build(_channelConnectionConfig);
     }
@@ -42,7 +42,7 @@ public class MessagesGateway : IMessagesGateway
         if (isFollowing.IsError)
             return isFollowing.Error;
 
-        var imageName = await _messageMediaGetaway.WriteAsync(image);
+        var imageName = await _messageMediaService.WriteAsync(image);
 
         var messageCreated = new ChannelMessageCreated
         {

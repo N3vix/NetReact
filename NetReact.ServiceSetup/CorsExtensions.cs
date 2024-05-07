@@ -2,7 +2,7 @@
 
 namespace NetReact.ServiceSetup;
 
-public static class CorsBuilder
+public static class CorsExtensions
 {
     public static void SetupCors(this IServiceCollection services)
     {

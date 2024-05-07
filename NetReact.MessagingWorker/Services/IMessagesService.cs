@@ -1,8 +1,8 @@
 ﻿using Models;
 
-namespace NetReact.MessagingWorker.Gateways;
+namespace NetReact.MessagingWorker.Services;
 
-public interface IMessagesGateway
+public interface IMessagesService
 {
     Task<string> Add(string senderId, string channelId, string content, string image);
     Task<bool> Delete(string senderId, string messageId);

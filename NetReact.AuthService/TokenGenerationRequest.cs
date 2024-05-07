@@ -1,3 +1,3 @@
 ﻿namespace NetReact.AuthService;
 
-public record TokenGenerationRequest(Guid UserId, string Email, string Role);
+public record TokenGenerationRequest(string Name, string Email);

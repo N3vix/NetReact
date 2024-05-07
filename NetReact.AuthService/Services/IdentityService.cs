@@ -1,23 +1,21 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Models;
 
-namespace NetReact.AuthService.Controllers;
+namespace NetReact.AuthService.Services;
 
-[ApiController]
-[Route("[controller]")]
-public class IdentityController : ControllerBase
+internal class IdentityService
 {
-    private readonly ILogger<IdentityController> _logger;
+    private readonly ILogger<IdentityService> _logger;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly JwtConfig _jwtConfig;
 
-    public IdentityController(
-        ILogger<IdentityController> logger,
+    public IdentityService(
+        ILogger<IdentityService> logger,
         UserManager<IdentityUser> userManager,
         IOptionsMonitor<JwtConfig> optionsMonitor)
     {
@@ -26,61 +24,61 @@ public class IdentityController : ControllerBase
         _jwtConfig = optionsMonitor.CurrentValue;
     }
 
-    [HttpPost("[action]")]
-    public async Task<IActionResult> Register([FromBody] UserRegistrationRequest request)
+    public async Task<Result<UserRegistrationResponse, string>> Register(string name, string email, string password)
     {
-        if (!ModelState.IsValid)
-            return BadRequest("Invalid request payload");
-        var existingUser = await _userManager.FindByEmailAsync(request.Email);
+        var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser != null)
-            return BadRequest(new UserRegistrationResponse
-            {
-                Success = false,
-                Errors = ["User already exist"]
-            });
+            return "User already exist";
 
         var newUser = new IdentityUser
         {
-            Email = request.Email,
-            UserName = request.Name
+            Email = email,
+            UserName = name
         };
 
-        var isCreated = await _userManager.CreateAsync(newUser, request.Password);
+        var isCreated = await _userManager.CreateAsync(newUser, password);
         if (!isCreated.Succeeded)
-            return BadRequest("Failed to create the user, please try again later");
+            return "Failed to create the user, please try again later";
 
         var token = GenerateToken(newUser);
 
-        return Ok(new UserRegistrationResponse
+        return new UserRegistrationResponse
         {
             Success = true,
             Token = token,
             UserId = newUser.Id
-        });
+        };
     }
 
-    [HttpPost("[action]")]
-    public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
+    public async Task<Result<UserLoginResponse, string>> Login(string email, string password)
     {
-        if (!ModelState.IsValid)
-            return BadRequest("Invalid request payload");
-
-        var existingUser = await _userManager.FindByEmailAsync(request.Email);
+        var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser == null)
-            return BadRequest("User not exist");
+            return "User not exist";
 
-        var isPasswordValid = await _userManager.CheckPasswordAsync(existingUser, request.Password);
+        var isPasswordValid = await _userManager.CheckPasswordAsync(existingUser, password);
         if (!isPasswordValid)
-            return BadRequest("Invalid user password");
+            return "Invalid user password";
 
         var token = GenerateToken(existingUser);
 
-        return Ok(new UserLoginResponse
+        return new UserLoginResponse
         {
             Success = true,
             Token = token,
             UserId = existingUser.Id
-        });
+        };
+    }
+
+    public async Task<Result<string, string>> GenerateToken(string name, string email)
+    {
+        var newUser = new IdentityUser
+        {
+            Email = email,
+            UserName = name
+        };
+
+        return Result<string,string>.Successful(GenerateToken(newUser));
     }
 
     private string GenerateToken(IdentityUser user)
@@ -111,7 +109,7 @@ public class IdentityController : ControllerBase
     {
         return new Dictionary<string, object>
         {
-            { JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()},
+            { JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString() },
             { JwtRegisteredClaimNames.Sub, user.Email },
             { JwtRegisteredClaimNames.Email, user.Email },
             { "userid", user.Id },

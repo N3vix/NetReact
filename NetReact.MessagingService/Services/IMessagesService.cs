@@ -1,8 +1,8 @@
 ﻿using Models;
 
-namespace NetReact.MessagingService.Gateways;
+namespace NetReact.MessagingService.Services;
 
-public interface IMessagesGateway
+public interface IMessagesService
 {
     Task<Result<string>> Add(string senderId, string channelId, string content, byte[]? image);
     Task<Result<ChannelMessage, string>> Get(string userId, string channelId, string messageId);
