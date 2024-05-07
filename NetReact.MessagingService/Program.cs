@@ -1,6 +1,7 @@
 using NetReact.MessageBroker.SharedModels;
 using NetReact.MessagingService;
 using NetReact.MessagingService.ApiSetup;
+using NetReact.MessagingService.Controllers;
 using NetReact.ServiceSetup;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,5 +27,6 @@ services.SetupCors();
 var app = builder.Build();
 app.Setup();
 app.UseHeaderPropagation();
+app.MapChannelMessagesEndpoints();
 
 app.Run();
