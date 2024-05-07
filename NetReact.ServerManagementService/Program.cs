@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using NetReact.ServerManagementService;
 using NetReact.ServerManagementService.ApiSetup;
+using NetReact.ServerManagementService.Controllers;
 using NetReact.ServiceSetup;
 using NetReact.ServiceSetup.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -24,6 +25,7 @@ services.SetupGateways();
 services.SetupCors();
 
 var app = builder.Build();
+app.MapServersEndpoints();
 app.SetupCommonApi();
 
 app.Run();
