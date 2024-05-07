@@ -7,6 +7,6 @@ internal static class MessageBrokerSetup
     public static void SetupMessageBroker(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<MessageBrokerConnection>();
-        serviceCollection.AddSingleton<IMessageBrokerProducer, MessageProducer>();
+        serviceCollection.AddScoped<IMessageBrokerProducerFactory, MessageBrokerProducerFactory>();
     }
 }

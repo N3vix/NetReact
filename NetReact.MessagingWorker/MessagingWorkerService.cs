@@ -9,18 +9,21 @@ namespace NetReact.MessagingWorker;
 
 public class MessagingWorkerService : BackgroundService
 {
+    private readonly MessageBrokerChannelConnectionConfig _channelConnectionConfig
+        = new() { ExchangeKey = "testExchange", QueueKey = "testQueue", RoutingKey = "testRoute" };
+
     private readonly IServiceScopeFactory _factory;
     private readonly IMessageBrokerConsumer _consumer;
 
     public MessagingWorkerService(
         IServiceScopeFactory factory,
-        IMessageBrokerConsumer consumer)
+        IMessageBrokerConsumerFactory consumer)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(consumer);
 
         _factory = factory;
-        _consumer = consumer;
+        _consumer = consumer.Build(_channelConnectionConfig);
     }
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken)

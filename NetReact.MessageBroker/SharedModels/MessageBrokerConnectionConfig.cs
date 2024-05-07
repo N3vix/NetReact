@@ -1,6 +1,6 @@
-﻿namespace NetReact.MessageBroker;
+﻿namespace NetReact.MessageBroker.SharedModels;
 
-public class MessageBrokerConnectionConfig
+public record MessageBrokerConnectionConfig
 {
     public string HostName { get; init; } = string.Empty;
     public int Port { get; init; }

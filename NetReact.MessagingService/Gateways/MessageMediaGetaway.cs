@@ -9,13 +9,14 @@ internal class MessageMediaGetaway : IMessageMediaGetaway
         ImagesPath = AppContext.BaseDirectory + Environment.GetEnvironmentVariable("ASPNETCORE_DBIMAGES");
     }
 
-    public async Task<string> WriteAsync(IFormFile formFile)
+    public async Task<string> WriteAsync(byte[] image)
     {
-        if (formFile == null) return null;
+        if (image == null || image.Length == 0) return null;
 
-        var newImagePath = Path.Combine(ImagesPath, formFile.FileName);
+        var imageName = Guid.NewGuid().ToString();
+        var newImagePath = Path.Combine(ImagesPath, imageName);
         await using var fileStream = new FileStream(newImagePath, FileMode.Create);
-        await formFile.CopyToAsync(fileStream);
-        return formFile.FileName;
+        await fileStream.WriteAsync(image);
+        return imageName;
     }
 }

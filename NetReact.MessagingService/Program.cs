@@ -1,4 +1,4 @@
-using NetReact.MessageBroker;
+using NetReact.MessageBroker.SharedModels;
 using NetReact.MessagingService;
 using NetReact.MessagingService.ApiSetup;
 using NetReact.ServiceSetup;
@@ -8,14 +8,13 @@ var services = builder.Services;
 var config = builder.Configuration;
 
 services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 services.Configure<Connections>(config.GetSection("Connections"));
 services.Configure<MessageBrokerConnectionConfig>(config.GetSection("MessageBrokerConnection"));
 
-services.AddHttpClient<MessagesServiceHttpClient>().AddHeaderPropagation();
+services.AddHttpClient<MessagesServiceHttpClient>(",").AddHeaderPropagation();
 services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
 
 services.SetupAuthentication(config);

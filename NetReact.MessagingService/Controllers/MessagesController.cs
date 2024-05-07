@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using NetReact.MessageBroker;
-using NetReact.MessageBroker.SharedModels;
 using NetReact.MessagingService.Gateways;
 
 namespace NetReact.MessagingService.Controllers;
@@ -12,53 +10,23 @@ namespace NetReact.MessagingService.Controllers;
 [Route("channel")]
 public class MessagesController : ControllerBase
 {
-    private readonly IMessageBrokerProducer _messageProducer;
+    private readonly IMessagesGateway _messagesGateway;
 
-    private ILogger<MessagesController> Logger { get; }
-    private MessagesServiceHttpClient HttpClient { get; }
-    private IMessagesGateway MessagesGateway { get; }
-    private IMessageMediaGetaway MessageMediaGetaway { get; }
-
-    public MessagesController(
-        ILogger<MessagesController> logger,
-        MessagesServiceHttpClient httpClient,
-        IMessagesGateway messagesGateway,
-        IMessageMediaGetaway messageMediaGetaway,
-        IMessageBrokerProducer messageProducer)
+    public MessagesController(IMessagesGateway messagesGateway)
     {
-        _messageProducer = messageProducer;
-        ArgumentNullException.ThrowIfNull(logger);
-        ArgumentNullException.ThrowIfNull(httpClient);
-        ArgumentNullException.ThrowIfNull(messageMediaGetaway);
-        ArgumentNullException.ThrowIfNull(messageProducer);
+        ArgumentNullException.ThrowIfNull(messagesGateway);
 
-        Logger = logger;
-        HttpClient = httpClient;
-        MessagesGateway = messagesGateway;
-        MessageMediaGetaway = messageMediaGetaway;
+        _messagesGateway = messagesGateway;
     }
 
     [HttpPost("messages")]
     public async Task<IActionResult> Add([FromForm] ChannelMessageAddRequest request)
     {
         var userId = User.GetUserId();
+        var image = GetByteArray(request.Image);
 
-        var isFollowing = await IsFollowing(userId, request.ChannelId);
-        if (isFollowing.IsError)
-            return BadRequest(new { Error = isFollowing.Error });
-
-        var fileName = await MessageMediaGetaway.WriteAsync(request.Image);
-
-        var messageCreated = new ChannelMessageCreated
-        {
-            SenderId = userId,
-            ChannelId = request.ChannelId,
-            Content = request.Content,
-            Image = fileName
-        };
-        _messageProducer.SendMessage(messageCreated);
-
-        return Ok();
+        var result = await _messagesGateway.Add(userId, request.ChannelId, request.Content, image);
+        return UnpuckResult(result);
     }
 
     [HttpGet("{channelId}/messages/{messageId}")]
@@ -66,13 +34,8 @@ public class MessagesController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var isFollowing = await IsFollowing(userId, channelId);
-        if (isFollowing.IsError)
-            return BadRequest(new { Error = isFollowing.Error });
-
-        var result = await MessagesGateway.Get(messageId);
-
-        return Ok(result);
+        var result = await _messagesGateway.Get(userId, channelId, messageId);
+        return UnpuckResult(result);
     }
 
     [HttpGet("{channelId}/messages")]
@@ -80,13 +43,8 @@ public class MessagesController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var isFollowing = await IsFollowing(userId, channelId);
-        if (isFollowing.IsError)
-            return BadRequest(new { Error = isFollowing.Error });
-
-        var result = await MessagesGateway.Get(channelId, take, from);
-
-        return Ok(result);
+        var result = await _messagesGateway.Get(userId, channelId, take, from);
+        return UnpuckResult(result);
     }
 
     [HttpPut("messages")]
@@ -94,13 +52,8 @@ public class MessagesController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var isFollowing = await IsFollowing(userId, request.ChannelId);
-        if (isFollowing.IsError)
-            return BadRequest(new { Error = isFollowing.Error });
-
-        var result = await MessagesGateway.Update(User.GetUserId(), request.MessageId, request.Content);
-
-        return Ok(result);
+        var result = await _messagesGateway.Update(userId, request.ChannelId, request.MessageId, request.Content);
+        return UnpuckResult(result);
     }
 
     [HttpDelete("messages")]
@@ -108,26 +61,8 @@ public class MessagesController : ControllerBase
     {
         var userId = User.GetUserId();
 
-        var isFollowing = await IsFollowing(userId, request.ChannelId);
-        if (isFollowing.IsError)
-            return BadRequest(new { Error = isFollowing.Error });
-
-        var result = await MessagesGateway.Delete(User.GetUserId(), request.MessageId);
-
-        return Ok(result);
-    }
-
-    private async Task<Result<bool, string>> IsFollowing(string userId, string channelId)
-    {
-        var response = await HttpClient.GetIsFollowingServer(userId, channelId);
-        if (!response.IsSuccessStatusCode)
-            return "Channel management service failed.";
-
-        var content = await response.Content.ReadAsStringAsync();
-        if (!bool.TryParse(content, out var result) || !result)
-            return "Operation not allowed.";
-
-        return true;
+        var result = await _messagesGateway.Delete(userId, request.ChannelId, request.MessageId);
+        return UnpuckResult(result);
     }
 
     private byte[]? GetByteArray(IFormFile? formFile)
@@ -137,5 +72,21 @@ public class MessagesController : ControllerBase
         using var stream = new MemoryStream();
         formFile.CopyTo(stream);
         return stream.ToArray();
+    }
+
+    private IActionResult UnpuckResult<TError>(Result<TError> result)
+    {
+        if (result.IsSuccess) return Ok();
+        return BadRequest(new { Error = result.Error });
+    }
+
+    private IActionResult UnpuckResult<TValue, TError>(
+        Result<TValue, TError> result,
+        Func<TValue, object> valueBuilder = null)
+    {
+        if (result.IsSuccess)
+            return Ok(valueBuilder == null ? result.Value : valueBuilder(result.Value));
+
+        return BadRequest(new { Error = result.Error });
     }
 }

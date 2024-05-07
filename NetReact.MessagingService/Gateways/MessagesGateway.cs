@@ -1,67 +1,123 @@
 ﻿using Models;
+using NetReact.MessageBroker;
+using NetReact.MessageBroker.SharedModels;
 using NetReact.MessagingService.Repositories;
 
 namespace NetReact.MessagingService.Gateways;
 
 public class MessagesGateway : IMessagesGateway
 {
-    private ILogger<MessagesGateway> Logger { get; }
-    private IMessagesRepository MessagesRepository { get; }
+    private readonly MessageBrokerChannelConnectionConfig _channelConnectionConfig
+        = new() { ExchangeKey = "testExchange", QueueKey = "testQueue", RoutingKey = "testRoute" };
+
+    private readonly ILogger<MessagesGateway> _logger;
+    private readonly IMessagesRepository _messagesRepository;
+    private readonly IMessageMediaGetaway _messageMediaGetaway;
+    private readonly MessagesServiceHttpClient _httpClient;
+    private readonly IMessageBrokerProducer _messageProducer;
 
     public MessagesGateway(
         ILogger<MessagesGateway> logger,
-        IMessagesRepository messagesRepository)
+        IMessagesRepository messagesRepository,
+        IMessageMediaGetaway messageMediaGetaway,
+        MessagesServiceHttpClient httpClient,
+        IMessageBrokerProducerFactory messageProducer)
     {
-        Logger = logger;
-        MessagesRepository = messagesRepository;
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(messagesRepository);
+        ArgumentNullException.ThrowIfNull(messageMediaGetaway);
+        ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(messageProducer);
+
+        _logger = logger;
+        _messagesRepository = messagesRepository;
+        _messageMediaGetaway = messageMediaGetaway;
+        _httpClient = httpClient;
+        _messageProducer = messageProducer.Build(_channelConnectionConfig);
     }
 
-    // public async Task<string> Add(string senderId, string channelId, string content, string image)
-    // {
-    //     var channelMessage = new ChannelMessage
-    //     {
-    //         ChannelId = channelId,
-    //         SenderId = senderId,
-    //         Timestamp = DateTime.UtcNow,
-    //         Content = content,
-    //         Image = image
-    //     };
-    //
-    //     return await MessagesRepository.Add(channelMessage);
-    // }
-
-    public async Task<ChannelMessage> Get(string messageId)
+    public async Task<Result<string>> Add(string senderId, string channelId, string content, byte[]? image)
     {
-        return await MessagesRepository.GetById(messageId);
+        var isFollowing = await IsFollowing(senderId, channelId);
+        if (isFollowing.IsError)
+            return isFollowing.Error;
+
+        var imageName = await _messageMediaGetaway.WriteAsync(image);
+
+        var messageCreated = new ChannelMessageCreated
+        {
+            SenderId = senderId,
+            ChannelId = channelId,
+            Content = content,
+            Image = imageName
+        };
+        _messageProducer.SendMessage(messageCreated);
+
+        return Result<string>.Successful();
     }
 
-    public Task<IEnumerable<ChannelMessage>> Get(string channelId, int take, DateTime from)
+    public async Task<Result<ChannelMessage, string>> Get(string userId, string channelId, string messageId)
     {
-        throw new NotImplementedException();
+        var isFollowing = await IsFollowing(userId, channelId);
+        if (isFollowing.IsError)
+            return isFollowing.Error;
+
+        return await _messagesRepository.GetById(messageId);
     }
 
-    public async Task<IEnumerable<ChannelMessage>> Get(string channelId, int take, DateTime? from = null)
+    public async Task<Result<IEnumerable<ChannelMessage>, string>> Get(
+        string userId,
+        string channelId,
+        int take,
+        DateTime? from = null)
     {
-        return await MessagesRepository.Get(channelId, take, from);
+        var isFollowing = await IsFollowing(userId, channelId);
+        if (isFollowing.IsError)
+            return isFollowing.Error;
+
+        var messages = await _messagesRepository.Get(channelId, take, from);
+        return Result<IEnumerable<ChannelMessage>, string>.Successful(messages);
     }
 
-    public async Task<bool> Update(string senderId, string messageId, string newContent)
+    public async Task<Result<bool, string>> Update(
+        string userId,
+        string channelId,
+        string messageId,
+        string newContent)
     {
-        if (string.IsNullOrEmpty(newContent)) return false;
+        var messageResult = await Get(userId, channelId, messageId);
+        if (messageResult.IsError) return messageResult.Error;
 
-        var message = await Get(messageId);
-        if (!senderId.Equals(message.SenderId)) return false;
+        var message = messageResult.Value;
+        if (!message.SenderId.Equals(userId)) return "Does not belong to the user";
+        if (string.IsNullOrEmpty(newContent)) return "Content cannot be empty.";
 
         message.Content = newContent;
         message.EditedTimestamp = DateTime.UtcNow;
-        return await MessagesRepository.Edit(messageId, message);
+        return await _messagesRepository.Edit(messageId, message);
     }
 
-    public async Task<bool> Delete(string senderId, string messageId)
+    public async Task<Result<bool, string>> Delete(string userId, string channelId, string messageId)
     {
-        var message = await Get(messageId);
+        var messageResult = await Get(userId, channelId, messageId);
+        if (messageResult.IsError) return messageResult.Error;
 
-        if (!senderId.Equals(message.SenderId)) return false;
-        return await MessagesRepository.Delete(messageId);
+        var message = messageResult.Value;
+        if (!message.SenderId.Equals(userId)) return "Does not belong to the user";
+        
+        return await _messagesRepository.Delete(messageId);
+    }
+
+    private async Task<Result<bool, string>> IsFollowing(string userId, string channelId)
+    {
+        var response = await _httpClient.GetIsFollowingServer(userId, channelId);
+        if (!response.IsSuccessStatusCode)
+            return "Channel management service failed.";
+
+        var content = await response.Content.ReadAsStringAsync();
+        if (!bool.TryParse(content, out var result) || !result)
+            return "Operation not allowed.";
+
+        return true;
     }
 }

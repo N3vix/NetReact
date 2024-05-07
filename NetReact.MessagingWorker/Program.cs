@@ -1,4 +1,5 @@
 using NetReact.MessageBroker;
+using NetReact.MessageBroker.SharedModels;
 using NetReact.MessagingWorker;
 using NetReact.MessagingWorker.ApiSetup;
 
@@ -10,7 +11,7 @@ services.Configure<Connections>(config.GetSection("Connections"));
 services.Configure<MessageBrokerConnectionConfig>(config.GetSection("MessageBrokerConnection"));
 
 services.AddSingleton<MessageBrokerConnection>();
-services.AddSingleton<IMessageBrokerConsumer, MessageConsumer>();
+services.AddScoped<IMessageBrokerConsumerFactory, MessageBrokerConsumerFactory>();
 services.AddHostedService<MessagingWorkerService>();
 
 services.SetupApplicationContext(config);
