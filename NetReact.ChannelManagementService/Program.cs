@@ -1,5 +1,6 @@
 using NetReact.ChannelManagementService;
 using NetReact.ChannelManagementService.ApiSetup;
+using NetReact.ChannelManagementService.Controllers;
 using NetReact.ServiceSetup;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,7 @@ services.SetupGateways();
 services.SetupCors();
 
 var app = builder.Build();
+app.SetupChannelsEndpoints();
 app.SetupCommonApi();
 app.UseHeaderPropagation();
 

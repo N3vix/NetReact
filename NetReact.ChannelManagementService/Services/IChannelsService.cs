@@ -4,7 +4,8 @@ namespace NetReact.ChannelManagementService.Services;
 
 public interface IChannelsService
 {
-    Task<string> CreateServer(string serverId, string name, ChannelType type);
-    Task<IEnumerable<ChannelDetails>> GetChannels(string serverId);
-    Task<ChannelDetails> GetChannel(string id);
+    Task<Result<string, string>> CreateServer(string serverId, string name, ChannelType type);
+    Task<Result<IEnumerable<ChannelDetails>, string>> GetChannels(string serverId);
+    Task<Result<ChannelDetails, string>> GetChannel(string id);
+    Task<Result<bool, string>> GetIsFollowing(string channelId);
 }

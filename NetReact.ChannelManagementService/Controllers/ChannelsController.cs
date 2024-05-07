@@ -1,79 +1,51 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Models;
 using NetReact.ChannelManagementService.Services;
+using NetReact.ServiceSetup;
 
 namespace NetReact.ChannelManagementService.Controllers;
 
-[ApiController]
-[Authorize]
-[Route("channels")]
-public class ChannelsController : ControllerBase
+internal static class ChannelsEndpoints
 {
-    private readonly ILogger<ChannelsController> _logger;
-    private readonly ChannelServiceHttpClient _httpClient;
-    private readonly IChannelsService _channelsService;
+    public static void SetupChannelsEndpoints(this IEndpointRouteBuilder routeBuilder)
+    {
+        var group = routeBuilder.MapGroup("channels").RequireAuthorization();
 
-    public ChannelsController(
-        ILogger<ChannelsController> logger,
-        ChannelServiceHttpClient httpClient,
+        group.MapPost("", CreateChannel);
+        group.MapGet("{serverId}/all", GetChannels);
+        group.MapGet("{id}", GetChannel);
+        group.MapGet("{channelId}/user", GetIsFollowing);
+    }
+
+    private static async Task<IResult> CreateChannel(
+        [FromBody] ChannelAddRequest request,
         IChannelsService channelsService)
     {
-        ArgumentNullException.ThrowIfNull(logger);
-        ArgumentNullException.ThrowIfNull(httpClient);
-        ArgumentNullException.ThrowIfNull(channelsService);
-
-        _logger = logger;
-        _httpClient = httpClient;
-        _channelsService = channelsService;
+        var result = await channelsService.CreateServer(request.ServerId, request.Name, request.Type);
+        return result.UnpuckResult();
     }
 
-    [HttpPost("")]
-    public async Task<IActionResult> CreateChannel([FromBody] ChannelAddRequest request)
+    private static async Task<IResult> GetChannels(
+        string serverId,
+        IChannelsService channelsService)
     {
-        var isFollowing = await IsFollowing(request.ServerId);
-        if (isFollowing.IsError)
-            return BadRequest(new { Error = isFollowing.Error });
-
-        var channelId = await _channelsService.CreateServer(request.ServerId, request.Name, request.Type);
-        return Ok(channelId);
+        var result = await channelsService.GetChannels(serverId);
+        return result.UnpuckResult();
     }
 
-    [HttpGet("{serverId}/all")]
-    public async Task<IEnumerable<ChannelDetails>> GetChannels(string serverId)
+    private static async Task<IResult> GetChannel(
+        string id,
+        IChannelsService channelsService)
     {
-        return await _channelsService.GetChannels(serverId);
+        var result = await channelsService.GetChannel(id);
+        return result.UnpuckResult();
     }
-
-    [HttpGet("{id}")]
-    public async Task<ChannelDetails> GetChannel(string id)
+    
+    private static async Task<IResult> GetIsFollowing(
+        string channelId,
+        IChannelsService channelsService)
     {
-        return await _channelsService.GetChannel(id);
-    }
-
-    [HttpGet("{channelId}/user")]
-    public async Task<IActionResult> GetIsFollowing(string channelId)
-    {
-        var channelDetails = await _channelsService.GetChannel(channelId);
-        if (channelDetails == null) return NotFound("Channel not found.");
-
-        var isFollowing = await IsFollowing(channelDetails.ServerId);
-        if (isFollowing.IsError)
-            return BadRequest(new { Error = isFollowing.Error });
-
-        return Ok(true);
-    }
-
-    private async Task<Result<bool, string>> IsFollowing(string serverId)
-    {
-        var response = await _httpClient.GetIsFollowingServer(serverId);
-        if (!response.IsSuccessStatusCode)
-            return "Server management service failed.";
-
-        var content = await response.Content.ReadAsStringAsync();
-        if (!bool.TryParse(content, out var result) || !result)
-            return "Operation not allowed.";
-
-        return true;
+        var result = await channelsService.GetIsFollowing(channelId);
+        return result.UnpuckResult();
     }
 }
