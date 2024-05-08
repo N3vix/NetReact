@@ -33,12 +33,12 @@ internal abstract class MessageBroker
         try
         {
             var channel = _connection.Connection.CreateModel();
-            channel.ExchangeDeclare(ChannelConnectionConfig.ExchangeKey, ExchangeType.Direct);
-            channel.QueueDeclare(ChannelConnectionConfig.QueueKey, true, false);
+            channel.ExchangeDeclare(ChannelConnectionConfig.Exchange, ExchangeType.Direct);
+            channel.QueueDeclare(ChannelConnectionConfig.Queue, true, false);
             channel.QueueBind(
-                ChannelConnectionConfig.QueueKey,
-                ChannelConnectionConfig.ExchangeKey,
-                ChannelConnectionConfig.RoutingKey);
+                ChannelConnectionConfig.Queue,
+                ChannelConnectionConfig.Exchange,
+                ChannelConnectionConfig.Routing);
             _logger.LogInformation("Connection has been created");
             return channel;
         }

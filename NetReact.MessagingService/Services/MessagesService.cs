@@ -1,4 +1,5 @@
-﻿using Models;
+﻿using Microsoft.Extensions.Options;
+using Models;
 using NetReact.MessageBroker;
 using NetReact.MessageBroker.SharedModels;
 using NetReact.MessagingService.Repositories;
@@ -7,9 +8,6 @@ namespace NetReact.MessagingService.Services;
 
 public class MessagesService : IMessagesService
 {
-    private readonly MessageBrokerChannelConnectionConfig _channelConnectionConfig
-        = new() { ExchangeKey = "testExchange", QueueKey = "testQueue", RoutingKey = "testRoute" };
-
     private readonly ILogger<MessagesService> _logger;
     private readonly IMessagesRepository _messagesRepository;
     private readonly IMessageMediaService _messageMediaService;
@@ -18,12 +16,14 @@ public class MessagesService : IMessagesService
 
     public MessagesService(
         ILogger<MessagesService> logger,
+        IOptionsSnapshot<MessageBrokerChannelConnectionConfig> options,
         IMessagesRepository messagesRepository,
         IMessageMediaService messageMediaService,
         MessagesServiceHttpClient httpClient,
         IMessageBrokerProducerFactory messageProducer)
     {
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(messagesRepository);
         ArgumentNullException.ThrowIfNull(messageMediaService);
         ArgumentNullException.ThrowIfNull(httpClient);
@@ -33,7 +33,8 @@ public class MessagesService : IMessagesService
         _messagesRepository = messagesRepository;
         _messageMediaService = messageMediaService;
         _httpClient = httpClient;
-        _messageProducer = messageProducer.Build(_channelConnectionConfig);
+        var channelConnectionConfig = options.Get("MessageCreated");
+        _messageProducer = messageProducer.Build(channelConnectionConfig);
     }
 
     public async Task<Result<string>> Add(string senderId, string channelId, string content, byte[]? image)
@@ -44,7 +45,7 @@ public class MessagesService : IMessagesService
 
         var imageName = await _messageMediaService.WriteAsync(image);
 
-        var messageCreated = new ChannelMessageCreated
+        var messageCreated = new CreateChannelMessageCommand
         {
             SenderId = senderId,
             ChannelId = channelId,

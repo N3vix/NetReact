@@ -19,7 +19,7 @@ internal class MessageBrokerProducer : MessageBroker, IMessageBrokerProducer
     {
         var body = SerializeMessage(message);
 
-        Channel.BasicPublish(ChannelConnectionConfig.ExchangeKey, ChannelConnectionConfig.RoutingKey, body: body);
+        Channel.BasicPublish(ChannelConnectionConfig.Exchange, ChannelConnectionConfig.Routing, body: body);
     }
 
     private byte[] SerializeMessage<T>(T message)

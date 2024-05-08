@@ -14,6 +14,9 @@ builder.Services.AddSwaggerGen();
 
 services.Configure<Connections>(config.GetSection("Connections"));
 services.Configure<MessageBrokerConnectionConfig>(config.GetSection("MessageBrokerConnection"));
+services.Configure<MessageBrokerChannelConnectionConfig>(
+    "MessageCreated",
+    config.GetSection("MessageBrokerChannelConnections:MessageCreated"));
 
 services.AddHttpClient<MessagesServiceHttpClient>(",").AddHeaderPropagation();
 services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));

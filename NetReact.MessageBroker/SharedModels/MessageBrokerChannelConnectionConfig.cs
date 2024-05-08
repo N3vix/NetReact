@@ -2,7 +2,7 @@
 
 public record MessageBrokerChannelConnectionConfig
 {
-    public string ExchangeKey { get; init; } = string.Empty;
-    public string QueueKey { get; init; } = string.Empty;
-    public string RoutingKey { get; init; } = string.Empty;
+    public string Exchange { get; init; } = string.Empty;
+    public string Queue { get; init; } = string.Empty;
+    public string Routing { get; init; } = string.Empty;
 }

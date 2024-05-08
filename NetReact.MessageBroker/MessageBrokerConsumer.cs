@@ -21,7 +21,7 @@ internal class MessageBrokerConsumer : MessageBroker, IMessageBrokerConsumer
     {
         _consumer.Received += handler;
         Channel.BasicConsume(
-            ChannelConnectionConfig.QueueKey,
+            ChannelConnectionConfig.Queue,
             true, Guid.NewGuid().ToString(), false, false, null,
             _consumer);
     }
