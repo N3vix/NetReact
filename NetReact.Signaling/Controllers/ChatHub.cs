@@ -1,23 +1,38 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using Models;
+using NetReact.MessageBroker;
+using NetReact.MessageBroker.SharedModels;
 using NetReact.Signaling.Repositories;
+using RabbitMQ.Client.Events;
 
 namespace NetReact.Signaling.Controllers;
+
+public interface IChatHub
+{
+    
+}
 
 [Authorize]
 public sealed class ChatHub : Hub
 {
-    private ILogger<ChatHub> Logger { get; }
-    private IConnectionsRepository ConnectionsRepository { get; }
+    private readonly ILogger<ChatHub> _logger;
+    private readonly IConnectionsRepository _connectionsRepository;
+
+    private readonly IMessageBrokerConsumer _createdMessageCommandConsumer;
+    private readonly IMessageBrokerConsumer _editedMessageCommandConsumer;
+    private readonly IMessageBrokerConsumer _deletedMessageCommandConsumer;
 
     public ChatHub(
         ILogger<ChatHub> logger,
-        IConnectionsRepository connectionsRepository)
+        IConnectionsRepository connectionsRepository,
+        IOptionsSnapshot<MessageBrokerChannelConnectionConfig> options,
+        IMessageBrokerConsumerFactory consumerFactory)
     {
         ArgumentNullException.ThrowIfNull(connectionsRepository);
-        Logger = logger;
-        ConnectionsRepository = connectionsRepository;
+        _logger = logger;
+        _connectionsRepository = connectionsRepository;
     }
 
     public async Task JoinSpecificChat(UserConnection conn)
@@ -27,7 +42,7 @@ public sealed class ChatHub : Hub
         await Groups
             .AddToGroupAsync(Context.ConnectionId, $"{conn.ServerId}/{conn.ChannelId}");
 
-        ConnectionsRepository.Connections[Context.ConnectionId] = conn;
+        _connectionsRepository.Connections[Context.ConnectionId] = conn;
 
         await Clients
             .Group($"{conn.ServerId}/{conn.ChannelId}")
@@ -36,13 +51,26 @@ public sealed class ChatHub : Hub
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        ConnectionsRepository.Connections.Remove(Context.ConnectionId, out _);
+        _connectionsRepository.Connections.Remove(Context.ConnectionId, out _);
 
         return base.OnDisconnectedAsync(exception);
     }
 
-    public async Task SendMessage(string messageId)
-        => await UpdateMessage("AddMessage", messageId);
+    // private async void OnMessageCreated(object? @object, BasicDeliverEventArgs args)
+    // {
+    //     var command = GetCommand<ChannelMessageCreated>(args);
+    //     // await UpdateMessage("AddMessage", GetCommand<ChannelMessageCreated>(args).MessageId);
+    //     // if (!_connectionsRepository.Connections.TryGetValue(Context.ConnectionId, out var conn))
+    //     //     return;
+    //
+    //     var connection =
+    //         _connectionsRepository.Connections.Values.FirstOrDefault(x => x.ChannelId.Equals(command.ChannelId));
+    //     if (connection == null) return;
+    //
+    //     await Clients
+    //         .Group($"{connection.ServerId}/{connection.ChannelId}")
+    //         .SendAsync("AddMessage", command.MessageId);
+    // }
 
     public async Task DeleteMessage(string messageId)
         => await UpdateMessage("DeleteMessage", messageId);
@@ -52,7 +80,7 @@ public sealed class ChatHub : Hub
 
     private async Task UpdateMessage(string actionName, string messageId)
     {
-        if (!ConnectionsRepository.Connections.TryGetValue(Context.ConnectionId, out var conn))
+        if (!_connectionsRepository.Connections.TryGetValue(Context.ConnectionId, out var conn))
             return;
 
         await Clients

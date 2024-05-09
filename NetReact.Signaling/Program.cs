@@ -1,18 +1,20 @@
-using Microsoft.Extensions.Options;
+using NetReact.MessageBroker;
 using NetReact.ServiceSetup;
-using NetReact.ServiceSetup.Swagger;
 using NetReact.Signaling.ApiSetup;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using NetReact.Signaling.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var config = builder.Configuration;
 
-services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
-services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+
+services.SetupConfigs(config);
+services.AddSingleton<MessageBrokerConnection>();
+services.AddScoped<IMessageBrokerConsumerFactory, MessageBrokerConsumerFactory>();
+services.AddHostedService<MessagingWorkerService>();
+
 services.AddSignalR();
 
 services.SetupAuthentication(config);

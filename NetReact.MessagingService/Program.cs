@@ -1,4 +1,3 @@
-using NetReact.MessageBroker.SharedModels;
 using NetReact.MessagingService;
 using NetReact.MessagingService.ApiSetup;
 using NetReact.MessagingService.Controllers;
@@ -12,17 +11,7 @@ services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-services.Configure<Connections>(config.GetSection("Connections"));
-services.Configure<MessageBrokerConnectionConfig>(config.GetSection("MessageBrokerConnection"));
-services.Configure<MessageBrokerChannelConnectionConfig>(
-    "MessageCreateCommand",
-    config.GetSection("MessageBrokerChannelConnections:MessageCreateCommand"));
-services.Configure<MessageBrokerChannelConnectionConfig>(
-    "MessageEditCommand",
-    config.GetSection("MessageBrokerChannelConnections:MessageEditCommand"));
-services.Configure<MessageBrokerChannelConnectionConfig>(
-    "MessageDeleteCommand",
-    config.GetSection("MessageBrokerChannelConnections:MessageDeleteCommand"));
+services.SetupConfigs(config);
 
 services.AddHttpClient<MessagesServiceHttpClient>().AddHeaderPropagation();
 services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));

@@ -1,6 +1,6 @@
 ﻿namespace NetReact.MessageBroker;
 
-public interface IMessageBrokerProducer
+public interface IMessageBrokerProducer : IDisposable
 {
     public void SendMessage<T>(T message);
 }

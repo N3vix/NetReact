@@ -18,8 +18,6 @@ public static class WebAppExtensions
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapControllers();
-
         app.UseCors("reactApp");
     }
 }

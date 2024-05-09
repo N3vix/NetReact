@@ -4,7 +4,7 @@ using RabbitMQ.Client;
 
 namespace NetReact.MessageBroker;
 
-internal abstract class MessageBroker
+internal abstract class MessageBroker : IDisposable
 {
     private readonly ILogger _logger;
     private readonly MessageBrokerConnection _connection;
@@ -47,5 +47,10 @@ internal abstract class MessageBroker
             _logger.LogCritical($"Could not connect to the channel: {e.Message}");
             return null;
         }
+    }
+
+    public void Dispose()
+    {
+        Channel.Dispose();
     }
 }

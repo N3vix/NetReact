@@ -6,7 +6,7 @@ using NetReact.MessagingService.Repositories;
 
 namespace NetReact.MessagingService.Services;
 
-public class MessagesService : IMessagesService
+public class MessagesService : IMessagesService, IDisposable
 {
     private readonly ILogger<MessagesService> _logger;
     private readonly IMessagesRepository _messagesRepository;
@@ -139,5 +139,12 @@ public class MessagesService : IMessagesService
             return "Operation not allowed.";
 
         return true;
+    }
+
+    public void Dispose()
+    {
+        _createMessageCommandProducer.Dispose();
+        _editMessageCommandProducer.Dispose();
+        _deleteMessageCommandProducer.Dispose();
     }
 }
