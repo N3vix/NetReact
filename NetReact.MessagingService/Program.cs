@@ -20,6 +20,9 @@ services.Configure<MessageBrokerChannelConnectionConfig>(
 services.Configure<MessageBrokerChannelConnectionConfig>(
     "MessageEditCommand",
     config.GetSection("MessageBrokerChannelConnections:MessageEditCommand"));
+services.Configure<MessageBrokerChannelConnectionConfig>(
+    "MessageDeleteCommand",
+    config.GetSection("MessageBrokerChannelConnections:MessageDeleteCommand"));
 
 services.AddHttpClient<MessagesServiceHttpClient>().AddHeaderPropagation();
 services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));

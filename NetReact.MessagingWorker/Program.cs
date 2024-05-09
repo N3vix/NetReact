@@ -16,6 +16,9 @@ services.Configure<MessageBrokerChannelConnectionConfig>(
 services.Configure<MessageBrokerChannelConnectionConfig>(
     "MessageEditCommand",
     config.GetSection("MessageBrokerChannelConnections:MessageEditCommand"));
+services.Configure<MessageBrokerChannelConnectionConfig>(
+    "MessageDeleteCommand",
+    config.GetSection("MessageBrokerChannelConnections:MessageDeleteCommand"));
 
 services.AddSingleton<MessageBrokerConnection>();
 services.AddScoped<IMessageBrokerConsumerFactory, MessageBrokerConsumerFactory>();

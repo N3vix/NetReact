@@ -15,6 +15,7 @@ public class MessagesService : IMessagesService
 
     private readonly IMessageBrokerProducer _createMessageCommandProducer;
     private readonly IMessageBrokerProducer _editMessageCommandProducer;
+    private readonly IMessageBrokerProducer _deleteMessageCommandProducer;
 
     public MessagesService(
         ILogger<MessagesService> logger,
@@ -39,6 +40,8 @@ public class MessagesService : IMessagesService
         _createMessageCommandProducer = messageProducer.Build(messageCreateCommandConfig);
         var messageEditCommandConfig = options.Get("MessageEditCommand");
         _editMessageCommandProducer = messageProducer.Build(messageEditCommandConfig);
+        var messageDeleteCommandConfig = options.Get("MessageDeleteCommand");
+        _deleteMessageCommandProducer = messageProducer.Build(messageDeleteCommandConfig);
     }
 
     public async Task<Result<string>> Add(string senderId, string channelId, string content, byte[]? image)
@@ -96,7 +99,7 @@ public class MessagesService : IMessagesService
         var message = messageResult.Value;
         if (!message.SenderId.Equals(userId)) return "Does not belong to the user";
         if (string.IsNullOrEmpty(newContent)) return "Content cannot be empty.";
-        
+
         var messageCreated = new EditChannelMessageCommand
         {
             MessageId = messageId,
@@ -115,8 +118,13 @@ public class MessagesService : IMessagesService
         var message = messageResult.Value;
         if (!message.SenderId.Equals(userId)) return "Does not belong to the user";
 
-        await _messagesRepository.Delete(messageId);
-        
+        var messageCreated = new DeleteChannelMessageCommand
+        {
+            MessageId = messageId,
+        };
+
+        _deleteMessageCommandProducer.SendMessage(messageCreated);
+
         return Result<string>.Successful();
     }
 

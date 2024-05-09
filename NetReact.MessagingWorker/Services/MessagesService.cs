@@ -48,11 +48,8 @@ public class MessagesService : IMessagesService
         return await MessagesRepository.Edit(messageId, message);
     }
 
-    public async Task<bool> Delete(string senderId, string messageId)
+    public async Task<bool> Delete(string messageId)
     {
-        var message = await Get(messageId);
-
-        if (!senderId.Equals(message.SenderId)) return false;
         return await MessagesRepository.Delete(messageId);
     }
 }

@@ -8,5 +8,5 @@ public interface IMessagesService
     Task<ChannelMessage> Get(string messageId);
     Task<IEnumerable<ChannelMessage>> Get(string channelId, int take,  DateTime? from = null);
     Task<bool> Update(string messageId, string newContent);
-    Task<bool> Delete(string senderId, string messageId);
+    Task<bool> Delete(string messageId);
 }

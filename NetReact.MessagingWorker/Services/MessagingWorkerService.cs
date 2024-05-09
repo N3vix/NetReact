@@ -12,6 +12,7 @@ public class MessagingWorkerService : BackgroundService
     private readonly IServiceScopeFactory _factory;
     private readonly IMessageBrokerConsumer _createMessageCommandConsumer;
     private readonly IMessageBrokerConsumer _editMessageCommandConsumer;
+    private readonly IMessageBrokerConsumer _deleteMessageCommandConsumer;
 
     public MessagingWorkerService(
         IServiceScopeFactory factory,
@@ -26,6 +27,8 @@ public class MessagingWorkerService : BackgroundService
         _createMessageCommandConsumer = consumerFactory.Build(messageCreateCommandConfig);
         var messageEditCommandConfig = options.Get("MessageEditCommand");
         _editMessageCommandConsumer = consumerFactory.Build(messageEditCommandConfig);
+        var messageDeleteCommandConfig = options.Get("MessageDeleteCommand");
+        _deleteMessageCommandConsumer = consumerFactory.Build(messageDeleteCommandConfig);
     }
 
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
@@ -33,6 +36,7 @@ public class MessagingWorkerService : BackgroundService
         cancellationToken.ThrowIfCancellationRequested();
         _createMessageCommandConsumer.AddListener(WriteMessage);
         _editMessageCommandConsumer.AddListener(EditMessage);
+        _deleteMessageCommandConsumer.AddListener(DeleteMessage);
 
         return Task.CompletedTask;
     }
@@ -41,20 +45,31 @@ public class MessagingWorkerService : BackgroundService
     {
         using var scope = _factory.CreateScope();
         var messagesService = scope.ServiceProvider.GetRequiredService<IMessagesService>();
-        var body = args.Body.ToArray();
-        var messageJson = Encoding.UTF8.GetString(body);
-        var message = JsonSerializer.Deserialize<CreateChannelMessageCommand>(messageJson)!;
-        messagesService.Add(message.SenderId, message.ChannelId, message.Content, message.Image);
+        var command = GetCommand<CreateChannelMessageCommand>(args);
+        messagesService.Add(command.SenderId, command.ChannelId, command.Content, command.Image);
     }
-    
+
     private void EditMessage(object? @object, BasicDeliverEventArgs args)
     {
         using var scope = _factory.CreateScope();
         var messagesService = scope.ServiceProvider.GetRequiredService<IMessagesService>();
+        var command = GetCommand<EditChannelMessageCommand>(args);
+        messagesService.Update(command.MessageId, command.NewContent);
+    }
+
+    private void DeleteMessage(object? @object, BasicDeliverEventArgs args)
+    {
+        using var scope = _factory.CreateScope();
+        var messagesService = scope.ServiceProvider.GetRequiredService<IMessagesService>();
+        var command = GetCommand<DeleteChannelMessageCommand>(args);
+        messagesService.Delete(command.MessageId);
+    }
+
+    private T GetCommand<T>(BasicDeliverEventArgs args)
+    {
         var body = args.Body.ToArray();
         var messageJson = Encoding.UTF8.GetString(body);
-        var message = JsonSerializer.Deserialize<EditChannelMessageCommand>(messageJson)!;
-        messagesService.Update(message.MessageId, message.NewContent);
+        return JsonSerializer.Deserialize<T>(messageJson)!;
     }
 
     public override void Dispose()
