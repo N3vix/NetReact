@@ -11,15 +11,18 @@ var config = builder.Configuration;
 services.Configure<Connections>(config.GetSection("Connections"));
 services.Configure<MessageBrokerConnectionConfig>(config.GetSection("MessageBrokerConnection"));
 services.Configure<MessageBrokerChannelConnectionConfig>(
-    "MessageCreated",
-    config.GetSection("MessageBrokerChannelConnections:MessageCreated"));
+    "MessageCreateCommand",
+    config.GetSection("MessageBrokerChannelConnections:MessageCreateCommand"));
+services.Configure<MessageBrokerChannelConnectionConfig>(
+    "MessageEditCommand",
+    config.GetSection("MessageBrokerChannelConnections:MessageEditCommand"));
 
 services.AddSingleton<MessageBrokerConnection>();
 services.AddScoped<IMessageBrokerConsumerFactory, MessageBrokerConsumerFactory>();
 services.AddHostedService<MessagingWorkerService>();
 
 services.SetupApplicationContext(config);
-services.SetupGateways();
+services.SetupServices();
 
 var app = builder.Build();
 

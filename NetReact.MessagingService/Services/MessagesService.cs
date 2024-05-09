@@ -12,7 +12,9 @@ public class MessagesService : IMessagesService
     private readonly IMessagesRepository _messagesRepository;
     private readonly IMessageMediaService _messageMediaService;
     private readonly MessagesServiceHttpClient _httpClient;
-    private readonly IMessageBrokerProducer _messageProducer;
+
+    private readonly IMessageBrokerProducer _createMessageCommandProducer;
+    private readonly IMessageBrokerProducer _editMessageCommandProducer;
 
     public MessagesService(
         ILogger<MessagesService> logger,
@@ -33,8 +35,10 @@ public class MessagesService : IMessagesService
         _messagesRepository = messagesRepository;
         _messageMediaService = messageMediaService;
         _httpClient = httpClient;
-        var channelConnectionConfig = options.Get("MessageCreateCommand");
-        _messageProducer = messageProducer.Build(channelConnectionConfig);
+        var messageCreateCommandConfig = options.Get("MessageCreateCommand");
+        _createMessageCommandProducer = messageProducer.Build(messageCreateCommandConfig);
+        var messageEditCommandConfig = options.Get("MessageEditCommand");
+        _editMessageCommandProducer = messageProducer.Build(messageEditCommandConfig);
     }
 
     public async Task<Result<string>> Add(string senderId, string channelId, string content, byte[]? image)
@@ -52,7 +56,7 @@ public class MessagesService : IMessagesService
             Content = content,
             Image = imageName
         };
-        _messageProducer.SendMessage(messageCreated);
+        _createMessageCommandProducer.SendMessage(messageCreated);
 
         return Result<string>.Successful();
     }
@@ -80,7 +84,7 @@ public class MessagesService : IMessagesService
         return Result<IEnumerable<ChannelMessage>, string>.Successful(messages);
     }
 
-    public async Task<Result<bool, string>> Update(
+    public async Task<Result<string>> Update(
         string userId,
         string channelId,
         string messageId,
@@ -92,21 +96,28 @@ public class MessagesService : IMessagesService
         var message = messageResult.Value;
         if (!message.SenderId.Equals(userId)) return "Does not belong to the user";
         if (string.IsNullOrEmpty(newContent)) return "Content cannot be empty.";
+        
+        var messageCreated = new EditChannelMessageCommand
+        {
+            MessageId = messageId,
+            NewContent = newContent,
+        };
+        _editMessageCommandProducer.SendMessage(messageCreated);
 
-        message.Content = newContent;
-        message.EditedTimestamp = DateTime.UtcNow;
-        return await _messagesRepository.Edit(messageId, message);
+        return Result<string>.Successful();
     }
 
-    public async Task<Result<bool, string>> Delete(string userId, string channelId, string messageId)
+    public async Task<Result<string>> Delete(string userId, string channelId, string messageId)
     {
         var messageResult = await Get(userId, channelId, messageId);
         if (messageResult.IsError) return messageResult.Error;
 
         var message = messageResult.Value;
         if (!message.SenderId.Equals(userId)) return "Does not belong to the user";
+
+        await _messagesRepository.Delete(messageId);
         
-        return await _messagesRepository.Delete(messageId);
+        return Result<string>.Successful();
     }
 
     private async Task<Result<bool, string>> IsFollowing(string userId, string channelId)

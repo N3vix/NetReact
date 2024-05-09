@@ -17,6 +17,9 @@ services.Configure<MessageBrokerConnectionConfig>(config.GetSection("MessageBrok
 services.Configure<MessageBrokerChannelConnectionConfig>(
     "MessageCreateCommand",
     config.GetSection("MessageBrokerChannelConnections:MessageCreateCommand"));
+services.Configure<MessageBrokerChannelConnectionConfig>(
+    "MessageEditCommand",
+    config.GetSection("MessageBrokerChannelConnections:MessageEditCommand"));
 
 services.AddHttpClient<MessagesServiceHttpClient>().AddHeaderPropagation();
 services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));

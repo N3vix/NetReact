@@ -13,11 +13,11 @@ public interface IMessagesService
         int take,
         DateTime? from = null);
 
-    Task<Result<bool, string>> Update(
+    Task<Result<string>> Update(
         string userId,
         string channelId,
         string messageId,
         string newContent);
 
-    Task<Result<bool, string>> Delete(string userId, string channelId, string messageId);
+    Task<Result<string>> Delete(string userId, string channelId, string messageId);
 }

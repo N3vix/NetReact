@@ -40,13 +40,9 @@ public class MessagesService : IMessagesService
         return await MessagesRepository.Get(channelId, take, from);
     }
 
-    public async Task<bool> Update(string senderId, string messageId, string newContent)
+    public async Task<bool> Update(string messageId, string newContent)
     {
-        if (string.IsNullOrEmpty(newContent)) return false;
-
         var message = await Get(messageId);
-        if (!senderId.Equals(message.SenderId)) return false;
-
         message.Content = newContent;
         message.EditedTimestamp = DateTime.UtcNow;
         return await MessagesRepository.Edit(messageId, message);

@@ -2,9 +2,9 @@
 
 namespace NetReact.MessagingWorker.ApiSetup;
 
-internal static class DataGatewaysSetup
+internal static class ServicesSetup
 {
-    public static void SetupGateways(this IServiceCollection services)
+    public static void SetupServices(this IServiceCollection services)
     {
         services.AddScoped<IMessagesService, MessagesService>();
     }
