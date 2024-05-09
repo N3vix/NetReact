@@ -57,13 +57,15 @@ services:
     networks:
       - localNetwork
 
-#  netReact-Monolith:
-#    image: netreact-monolith
-#    build:
-#      context: .
-#      dockerfile: ./NetReactMonolith/Dockerfile
-#    ports:
-#      - '7153:8080'
+  netreact-signaling:
+    image: netreact-signaling
+    build:
+      context: .
+      dockerfile: ./NetReact.Signaling/Dockerfile
+    ports:
+      - '7153:8080'
+    networks:
+      - localNetwork
 
   netReact-Auth:
     image: netreact-authservice

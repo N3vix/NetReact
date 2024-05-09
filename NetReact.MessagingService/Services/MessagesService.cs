@@ -33,7 +33,7 @@ public class MessagesService : IMessagesService
         _messagesRepository = messagesRepository;
         _messageMediaService = messageMediaService;
         _httpClient = httpClient;
-        var channelConnectionConfig = options.Get("MessageCreated");
+        var channelConnectionConfig = options.Get("MessageCreateCommand");
         _messageProducer = messageProducer.Build(channelConnectionConfig);
     }
 

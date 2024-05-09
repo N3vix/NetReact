@@ -15,10 +15,10 @@ builder.Services.AddSwaggerGen();
 services.Configure<Connections>(config.GetSection("Connections"));
 services.Configure<MessageBrokerConnectionConfig>(config.GetSection("MessageBrokerConnection"));
 services.Configure<MessageBrokerChannelConnectionConfig>(
-    "MessageCreated",
-    config.GetSection("MessageBrokerChannelConnections:MessageCreated"));
+    "MessageCreateCommand",
+    config.GetSection("MessageBrokerChannelConnections:MessageCreateCommand"));
 
-services.AddHttpClient<MessagesServiceHttpClient>(",").AddHeaderPropagation();
+services.AddHttpClient<MessagesServiceHttpClient>().AddHeaderPropagation();
 services.AddHeaderPropagation(o => o.Headers.Add("Authorization"));
 
 services.SetupAuthentication(config);

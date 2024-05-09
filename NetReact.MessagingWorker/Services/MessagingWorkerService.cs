@@ -21,7 +21,7 @@ public class MessagingWorkerService : BackgroundService
         ArgumentNullException.ThrowIfNull(consumer);
 
         _factory = factory;
-        var channelConnectionConfig = options.Get("MessageCreated");
+        var channelConnectionConfig = options.Get("MessageCreateCommand");
         _consumer = consumer.Build(channelConnectionConfig);
     }
 
