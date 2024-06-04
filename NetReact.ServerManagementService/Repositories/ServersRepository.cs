@@ -1,18 +1,18 @@
-﻿using Models;
-using MongoDB.Driver;
+﻿using Microsoft.EntityFrameworkCore;
+using Models;
 using NetReact.ServerManagementService.DB;
 
 namespace NetReact.ServerManagementService.Repositories;
 
 public class ServersRepository : IServersRepository
 {
-    private readonly IMongoDbContext _mongoDbContext;
+    private readonly ApplicationContext _dbContext;
 
-    public ServersRepository(IMongoDbContext mongoDbContext)
+    public ServersRepository(ApplicationContext dbContext)
     {
-        ArgumentNullException.ThrowIfNull(mongoDbContext);
+        ArgumentNullException.ThrowIfNull(dbContext);
 
-        _mongoDbContext = mongoDbContext;
+        _dbContext = dbContext;
     }
 
     public async Task<string> Add(ServerDetails serverDetails)
@@ -21,7 +21,7 @@ public class ServersRepository : IServersRepository
 
         serverDetails.Id = Guid.NewGuid().ToString();
 
-        await _mongoDbContext.Servers.InsertOneAsync(serverDetails);
+        await _dbContext.Servers.AddAsync(serverDetails);
 
         return serverDetails.Id;
     }
@@ -38,57 +38,65 @@ public class ServersRepository : IServersRepository
 
     public async Task<IEnumerable<ServerDetails>> Get()
     {
-        var servers = await _mongoDbContext.Servers.Find(_ => true).ToListAsync();
-
-        return servers;
+        //TODO IMPLEMENT PAGINATION
+        return await _dbContext.Servers.AsNoTracking().ToArrayAsync();
     }
 
     public async Task<ServerDetails> GetById(string id)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
 
-        var filter = GetIdFilter(id);
-        var servers = await _mongoDbContext.Servers.Find(filter).FirstOrDefaultAsync();
-
-        return servers;
+        return await _dbContext.Servers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<IEnumerable<ServerDetails>> GetByUserId(string userId)
     {
         ArgumentException.ThrowIfNullOrEmpty(userId);
 
-        var serverFollowerFilter = Builders<ServerFollower>.Filter.Eq(x => x.UserId, userId);
-        var userServers = await _mongoDbContext.Followers.Find(serverFollowerFilter).ToListAsync();
+        var servers =
+            from s in _dbContext.Servers.AsNoTracking()
+            join f in _dbContext.Followers.AsNoTracking()
+                on s.Id equals f.ServerId
+            where f.UserId == userId
+            select s;
 
-        var serverDetailsFilter = Builders<ServerDetails>.Filter.In(x => x.Id, userServers.Select(x => x.ServerId));
-        var servers = await _mongoDbContext.Servers.Find(serverDetailsFilter).ToListAsync();
-
-        return servers;
+        return await servers.ToArrayAsync();
     }
 
-    public async Task<bool> Edit(string id, ServerDetails serverDetails)
+    public async Task<bool> GetIsUserFollowingServer(string userId, string serverId)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(userId);
+        ArgumentException.ThrowIfNullOrEmpty(serverId);
+
+        var servers =
+            from s in _dbContext.Servers.AsNoTracking()
+            join f in _dbContext.Followers.AsNoTracking()
+                on s.Id equals f.ServerId
+            where f.ServerId == serverId && f.UserId == userId
+            select s;
+
+        return await servers.AnyAsync();
+    }
+
+    public async Task Edit(string id, Action<ServerDetails> editor)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
-        ArgumentNullException.ThrowIfNull(serverDetails);
+        ArgumentNullException.ThrowIfNull(editor);
 
-        var filter = GetIdFilter(id);
-        var update = Builders<ServerDetails>.Update.Set(x => x.Name, serverDetails.Name);
-
-        var result = await _mongoDbContext.Servers.UpdateOneAsync(filter, update);
-
-        return result.ModifiedCount == 1;
+        var server = await _dbContext.Servers.FindAsync(id);
+        if (server == null) return;
+        editor(server);
     }
 
-    public async Task<bool> Delete(string id)
+    public async Task Delete(string id)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
 
-        var filter = GetIdFilter(id);
-        var result = await _mongoDbContext.Servers.DeleteOneAsync(filter);
-
-        return result.DeletedCount == 1;
+        var server = await _dbContext.Servers.FindAsync(id);
+        if (server == null) return;
+        _dbContext.Servers.Remove(server);
     }
 
-    private FilterDefinition<ServerDetails> GetIdFilter(string id)
-        => Builders<ServerDetails>.Filter.Eq(x => x.Id, id);
+    public async Task Save()
+        => await _dbContext.SaveChangesAsync();
 }

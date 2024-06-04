@@ -14,7 +14,7 @@ public static class ResultExtensions
 
     public static IResult UnpuckResult<TValue, TError>(
         this Result<TValue, TError> result,
-        Func<TValue, object> valueBuilder = null)
+        Func<TValue, object>? valueBuilder = null)
     {
         return result.IsSuccess
             ? Results.Ok(valueBuilder == null

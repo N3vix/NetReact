@@ -9,6 +9,8 @@ public interface IServersRepository
     Task<IEnumerable<ServerDetails>> Get();
     Task<ServerDetails> GetById(string id);
     Task<IEnumerable<ServerDetails>> GetByUserId(string userId);
-    Task<bool> Edit(string id, ServerDetails serverDetails);
-    Task<bool> Delete(string id);
+    Task<bool> GetIsUserFollowingServer(string userId, string serverId);
+    Task Edit(string id, Action<ServerDetails> editor);
+    Task Delete(string id);
+    Task Save();
 }

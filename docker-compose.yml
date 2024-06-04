@@ -15,27 +15,28 @@ services:
       - messageBroker:/var/lib/rabbitmq/
     networks:
       - localNetwork
-
+  
   mssqlAuth:
-    image: mysql
+    image: mcr.microsoft.com/mssql/server
     ports:
-      - '27018:3306'
+      - 27018:1433
     environment:
-      MYSQL_DATABASE: 'db'
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: 'password'
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "_Aa12345678"
     volumes:
-      - dbauth:/var/lib/mysql
+      - dbauth:/var/opt/mssql
     networks:
       - localNetwork
 
-  mongoServers:
-    image: mongo
+  mssqlServers:
+    image: mcr.microsoft.com/mssql/server
     ports:
-      - '27019:27017'
+      - 27019:1433
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "_Aa12345678"
     volumes:
-      - dbservers:/data/db
+      - dbservers:/var/opt/mssql
     networks:
       - localNetwork
 
@@ -57,23 +58,28 @@ services:
     networks:
       - localNetwork
 
-#  netreact-signaling:
-#    image: netreact-signaling
-#    build:
-#      context: .
-#      dockerfile: ./NetReact.Signaling/Dockerfile
-#    ports:
-#      - '7153:8080'
-#    networks:
-#      - localNetwork
+  netreact-signaling:
+    image: netreact-signaling
+    build:
+      context: .
+      dockerfile: ./NetReact.Signaling/Dockerfile
+    ports:
+      - '7153:8080'
+    environment:
+      - MessageBrokerConnection__HostName=messageBrokerMessaging
+      - MessageBrokerConnection__Port=5672
+      - MessageBrokerConnection__UserName=root
+      - MessageBrokerConnection__Password=password
+    networks:
+      - localNetwork
 
   netReact-Auth:
     image: netreact-authservice
-    build: 
+    build:
       context: .
       dockerfile: ./NetReact.AuthService/Dockerfile
     environment:
-      - "Connections__Database=Server=mssqlAuth;port=3306;database=db;user=root;password=password"
+      - "Connections__Database=Server=mssqlAuth,1433;Database=db;User=sa;Password=_Aa12345678;TrustServerCertificate=True"
     ports:
       - '7154:8080'
     depends_on:
@@ -87,12 +93,12 @@ services:
       context: .
       dockerfile: ./NetReact.ServerManagementService/Dockerfile
     environment:
-      - Connections__Database=mongodb://mongoServers:27017/
+      - "Connections__Database=Server=mssqlServers,1433;Database=db;User=sa;Password=_Aa12345678;TrustServerCertificate=True"
       - Connections__Redis=127.0.0.1:6379
     ports:
       - '7155:8080'
     depends_on:
-      - mongoServers
+      - mssqlServers
     networks:
       - localNetwork
 
@@ -156,8 +162,8 @@ volumes:
   dbservers:
   dbchannels:
   dbmessages:
-    
+
 networks:
   localNetwork:
-    external: 
+    external:
       name: network

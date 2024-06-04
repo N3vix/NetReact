@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NetReact.AuthService.DB;
+using NetReact.ServerManagementService.DB;
+using NetReact.ServerManagementService.Repositories;
 
-namespace NetReact.AuthService.ApiSetup;
+namespace NetReact.ServerManagementService.ApiSetup;
 
 internal static class ApplicationContextBuilder
 {
@@ -9,8 +10,10 @@ internal static class ApplicationContextBuilder
     {
         var connections = new Connections();
         config.GetSection(nameof(Connections)).Bind(connections);
-        
+
         services.AddDbContext<ApplicationContext>(options => ConfigureApplicationContextOptions(options, connections));
+
+        services.AddScoped<IServersRepository, ServersRepository>();
     }
 
     private static void ConfigureApplicationContextOptions(

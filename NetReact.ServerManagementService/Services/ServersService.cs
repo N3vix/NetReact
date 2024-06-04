@@ -8,22 +8,19 @@ namespace NetReact.ServerManagementService.Services;
 internal class ServersService : IServersService
 {
     private IServersRepository ServersRepository { get; }
-    private IServerFollowersRepository FollowersRepository { get; }
     private ICacheService CacheService { get; }
 
     public ServersService(
         IServersRepository serversRepository,
-        IServerFollowersRepository followersRepository,
         ICacheService cacheService)
     {
         ServersRepository = serversRepository;
-        FollowersRepository = followersRepository;
         CacheService = cacheService;
     }
     
     public async Task<string> CreateServer(string name)
     {
-        return await ServersRepository.Add(new ServerDetails() { Id = Guid.NewGuid().ToString(), Name = name });
+        return await ServersRepository.Add(new ServerDetails { Name = name });
     }
 
     public async Task<IEnumerable<ServerDetails>> GetAllServers()
@@ -61,6 +58,6 @@ internal class ServersService : IServersService
     
     public async Task<bool> GetIsFollowing(string userId, string serverId)
     {
-        return await FollowersRepository.GetIsUserFollowingServer(userId, serverId);
+        return await ServersRepository.GetIsUserFollowingServer(userId, serverId);
     }
 }
