@@ -6,7 +6,6 @@ namespace NetReact.ServerManagementService.DB;
 public class ApplicationContext : DbContext
 {
     public DbSet<ServerDetails> Servers => Set<ServerDetails>();
-
     public DbSet<ServerFollower> Followers => Set<ServerFollower>();
     
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
@@ -19,7 +18,9 @@ public class ApplicationContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<ServerDetails>().ToTable("ServerDetails");
-        modelBuilder.Entity<ServerFollower>().ToTable("ServerFollowers");
+        modelBuilder.Entity<ServerDetails>()
+            .ToTable("ServerDetails");
+        modelBuilder.Entity<ServerFollower>()
+            .ToTable("ServerFollowers");
     }
 }
