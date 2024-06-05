@@ -9,4 +9,6 @@ public class ServerDetails
     public string? Description { get; set; }
     
     public DateTime CreationDate { get; set; }
+    
+    public List<ServerFollower> Followers { get; set; } = [];
 }

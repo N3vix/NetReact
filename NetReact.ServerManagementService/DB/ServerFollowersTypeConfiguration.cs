@@ -14,18 +14,21 @@ public class ServerFollowersTypeConfiguration : IEntityTypeConfiguration<ServerF
             .IsRequired();
 
         builder.Property<string>(x => x.ServerId)
-            .IsRequired()
             .HasColumnType("nvarchar(40)")
             .HasColumnOrder(2)
             .IsRequired();
 
         builder.Property<string>(x => x.UserId)
-            .IsRequired()
             .HasColumnType("nvarchar(40)")
             .HasColumnOrder(3)
             .IsRequired();
 
         builder.HasKey(x => x.Id);
+
+        builder.HasOne(x => x.Server)
+            .WithMany(x => x.Followers)
+            .HasForeignKey(x => x.ServerId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.ToTable("ServerFollowers");
     }
