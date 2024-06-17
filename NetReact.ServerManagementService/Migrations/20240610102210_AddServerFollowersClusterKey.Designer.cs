@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetReact.ServerManagementService.DB;
 
@@ -11,9 +12,11 @@ using NetReact.ServerManagementService.DB;
 namespace NetReact.ServerManagementService.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240610102210_AddServerFollowersClusterKey")]
+    partial class AddServerFollowersClusterKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,9 +67,10 @@ namespace NetReact.ServerManagementService.Migrations
                         .HasColumnOrder(3)
                         .HasDefaultValueSql("sysdatetime()");
 
-                    b.HasKey("ServerId", "UserId");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasIndex("UserId");
+                    b.HasKey("ServerId", "UserId");
 
                     b.ToTable("ServerFollowers", (string)null);
                 });

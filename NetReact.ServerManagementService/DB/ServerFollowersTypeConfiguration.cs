@@ -8,22 +8,23 @@ public class ServerFollowersTypeConfiguration : IEntityTypeConfiguration<ServerF
 {
     public void Configure(EntityTypeBuilder<ServerFollower> builder)
     {
-        builder.Property<string>(x => x.Id)
+        builder.Property<string>(x => x.ServerId)
             .HasColumnType("nvarchar(40)")
             .HasColumnOrder(1)
             .IsRequired();
 
-        builder.Property<string>(x => x.ServerId)
+        builder.Property<string>(x => x.UserId)
             .HasColumnType("nvarchar(40)")
             .HasColumnOrder(2)
             .IsRequired();
 
-        builder.Property<string>(x => x.UserId)
-            .HasColumnType("nvarchar(40)")
+        builder.Property<DateTime>(x => x.FollowDate)
+            .HasColumnType("DATETIME2(2)")
             .HasColumnOrder(3)
-            .IsRequired();
+            .HasDefaultValueSql("sysdatetime()");
 
-        builder.HasKey(x => x.Id);
+        builder.HasKey(x => new { x.ServerId, x.UserId });
+        builder.HasIndex(x => x.UserId);
 
         builder.HasOne(x => x.Server)
             .WithMany(x => x.Followers)

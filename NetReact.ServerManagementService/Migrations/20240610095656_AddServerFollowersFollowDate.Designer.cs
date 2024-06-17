@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetReact.ServerManagementService.DB;
 
@@ -11,9 +12,11 @@ using NetReact.ServerManagementService.DB;
 namespace NetReact.ServerManagementService.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20240610095656_AddServerFollowersFollowDate")]
+    partial class AddServerFollowersFollowDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,23 +53,29 @@ namespace NetReact.ServerManagementService.Migrations
 
             modelBuilder.Entity("Models.ServerFollower", b =>
                 {
-                    b.Property<string>("ServerId")
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(40)")
                         .HasColumnOrder(1);
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(40)")
-                        .HasColumnOrder(2);
 
                     b.Property<DateTime>("FollowDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("DATETIME2(2)")
-                        .HasColumnOrder(3)
+                        .HasColumnOrder(4)
                         .HasDefaultValueSql("sysdatetime()");
 
-                    b.HasKey("ServerId", "UserId");
+                    b.Property<string>("ServerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnOrder(2);
 
-                    b.HasIndex("UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(40)")
+                        .HasColumnOrder(3);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServerId");
 
                     b.ToTable("ServerFollowers", (string)null);
                 });

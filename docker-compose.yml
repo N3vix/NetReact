@@ -119,6 +119,7 @@ services:
 
   netReact-Messaging:
     image: netreact-messagingservice
+    restart: always
     build:
       context: .
       dockerfile: ./NetReact.MessagingService/Dockerfile
