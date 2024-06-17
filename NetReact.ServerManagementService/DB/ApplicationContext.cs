@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.EntityFrameworkCore;
 using Models;
 
 namespace NetReact.ServerManagementService.DB;
@@ -17,5 +18,12 @@ public class ApplicationContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationContext).Assembly);
+    }
+
+    public async Task<bool> GetIsUserFollowingServer(string userId, string serverId)
+    {
+        var queryString = $"SELECT dbo.GetIsUserFollowing('{userId}', '{serverId}') AS Value";
+
+        return await Database.SqlQuery<int>(FormattableStringFactory.Create(queryString)).FirstOrDefaultAsync() == 1;
     }
 }

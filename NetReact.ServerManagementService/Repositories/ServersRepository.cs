@@ -26,16 +26,6 @@ public class ServersRepository : IServersRepository
         return serverDetails.Id;
     }
 
-    public async Task Add(params ServerDetails[] serverDetails)
-    {
-        ArgumentNullException.ThrowIfNull(serverDetails);
-
-        foreach (var server in serverDetails)
-        {
-            await Add(server);
-        }
-    }
-
     public async Task<IEnumerable<ServerDetails>> Get()
     {
         //TODO IMPLEMENT PAGINATION
@@ -68,14 +58,7 @@ public class ServersRepository : IServersRepository
         ArgumentException.ThrowIfNullOrEmpty(userId);
         ArgumentException.ThrowIfNullOrEmpty(serverId);
 
-        var servers =
-            from s in _dbContext.Servers.AsNoTracking()
-            join f in _dbContext.Followers.AsNoTracking()
-                on s.Id equals f.ServerId
-            where f.ServerId == serverId && f.UserId == userId
-            select s;
-
-        return await servers.AnyAsync();
+        return await _dbContext.GetIsUserFollowingServer(userId, serverId);
     }
 
     public async Task Edit(string id, Action<ServerDetails> editor)

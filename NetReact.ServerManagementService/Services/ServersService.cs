@@ -20,7 +20,9 @@ internal class ServersService : IServersService
     
     public async Task<string> CreateServer(string name)
     {
-        return await ServersRepository.Add(new ServerDetails { Name = name });
+        var id = await ServersRepository.Add(new ServerDetails { Name = name });
+        await ServersRepository.Save();
+        return id;
     }
 
     public async Task<IEnumerable<ServerDetails>> GetAllServers()
