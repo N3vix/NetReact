@@ -2,6 +2,13 @@ version: '1'
 
 services:
   
+  jaegerTracing:
+    image: jaegertracing/opentelemetry-all-in-one
+    ports:
+      - 13133:13133
+      - 16686:16686
+      - 4317:4317
+  
   messageBrokerMessaging:
     image: rabbitmq:3-management-alpine
     hostname: messageBrokerMessaging

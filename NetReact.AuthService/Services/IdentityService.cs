@@ -1,24 +1,27 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Models;
+using OpenTelemetry.Trace;
 
 namespace NetReact.AuthService.Services;
 
 internal class IdentityService
 {
+    private readonly Tracer _tracer;
     private readonly ILogger<IdentityService> _logger;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly JwtConfig _jwtConfig;
 
     public IdentityService(
+        Tracer tracer,
         ILogger<IdentityService> logger,
         UserManager<IdentityUser> userManager,
         IOptionsMonitor<JwtConfig> optionsMonitor)
     {
+        _tracer = tracer;
         _logger = logger;
         _userManager = userManager;
         _jwtConfig = optionsMonitor.CurrentValue;
@@ -52,11 +55,11 @@ internal class IdentityService
 
     public async Task<Result<UserLoginResponse, string>> Login(string email, string password)
     {
-        var existingUser = await _userManager.FindByEmailAsync(email);
+        var existingUser = await FindUserByEmail(email);
         if (existingUser == null)
             return "User not exist";
 
-        var isPasswordValid = await _userManager.CheckPasswordAsync(existingUser, password);
+        var isPasswordValid = await CheckUserPassword(existingUser, password);
         if (!isPasswordValid)
             return "Invalid user password";
 
@@ -68,6 +71,18 @@ internal class IdentityService
             Token = token,
             UserId = existingUser.Id
         };
+    }
+
+    private async Task<IdentityUser?> FindUserByEmail(string email)
+    {
+        using var _ = _tracer.StartSpan(nameof(FindUserByEmail));
+        return await _userManager.FindByEmailAsync(email);
+    }
+
+    private async Task<bool> CheckUserPassword(IdentityUser user, string password)
+    {
+        using var _ = _tracer.StartSpan(nameof(CheckUserPassword));
+        return await _userManager.CheckPasswordAsync(user, password);
     }
 
     public async Task<Result<string, string>> GenerateToken(string name, string email)
@@ -83,6 +98,7 @@ internal class IdentityService
 
     private string GenerateToken(IdentityUser user)
     {
+        using var _ = _tracer.StartSpan(nameof(GenerateToken));
         var tokenHandler = new JwtSecurityTokenHandler();
 
         var tokenDescriptor = GetTokenDescriptor(user);
