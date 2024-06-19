@@ -3,11 +3,16 @@ version: '1'
 services:
   
   jaegerTracing:
-    image: jaegertracing/opentelemetry-all-in-one
+    image: jaegertracing/all-in-one
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
     ports:
       - 13133:13133
       - 16686:16686
       - 4317:4317
+      - 4318:4318
+    networks:
+      - localNetwork
   
   messageBrokerMessaging:
     image: rabbitmq:3-management-alpine
@@ -87,6 +92,7 @@ services:
       dockerfile: ./NetReact.AuthService/Dockerfile
     environment:
       - "Connections__Database=Server=mssqlAuth,1433;Database=db;User=sa;Password=_Aa12345678;TrustServerCertificate=True"
+      - Connections__OTEL_EXPORTER_OTLP_ENDPOINT=http://jaegerTracing:4317
     ports:
       - '7154:8080'
     depends_on:
@@ -102,6 +108,7 @@ services:
     environment:
       - "Connections__Database=Server=mssqlServers,1433;Database=db;User=sa;Password=_Aa12345678;TrustServerCertificate=True"
       - Connections__Redis=127.0.0.1:6379
+      - Connections__OTEL_EXPORTER_OTLP_ENDPOINT=http://jaegerTracing:4317
     ports:
       - '7155:8080'
     depends_on:

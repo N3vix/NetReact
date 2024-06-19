@@ -1,29 +1,30 @@
 ﻿using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Hosting;
 
-namespace NetReact.AuthService;
+namespace NetReact.ServiceSetup;
 
-internal class AuthMetrics
+public class Metrics
 {
-    public const string MeterName = "AuthService.Api";
+    private readonly Histogram<double> _requestDuration;
 
-    private readonly Histogram<double> _authApiRequestDuration;
-
-    public AuthMetrics(IMeterFactory meterFactory)
+    public Metrics(IHostEnvironment environment, IMeterFactory meterFactory)
     {
-        var meter = meterFactory.Create(MeterName);
+        var meter = meterFactory.Create(environment.ApplicationName);
 
-        _authApiRequestDuration = meter.CreateHistogram<double>($"{MeterName}.requests.duration", "ms");
+        _requestDuration = meter.CreateHistogram<double>(
+            $"{environment.ApplicationName}.requests.duration", "ms");
     }
 
     public TrackedRequestDuration MeasureRequestDuration()
     {
-        return new TrackedRequestDuration(_authApiRequestDuration);
+        return new TrackedRequestDuration(_requestDuration);
     }
 }
 
-internal class TrackedRequestDuration : IDisposable
+public class TrackedRequestDuration : IDisposable
 {
     private readonly long _requestStartTime = TimeProvider.System.GetTimestamp();
+    
     private readonly Histogram<double> _histogram;
 
     public TrackedRequestDuration(Histogram<double> histogram)

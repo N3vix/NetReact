@@ -29,18 +29,14 @@ internal class IdentityService
 
     public async Task<Result<UserRegistrationResponse, string>> Register(string name, string email, string password)
     {
-        var existingUser = await _userManager.FindByEmailAsync(email);
+        using var _ = _tracer.StartSpan(nameof(Register));
+
+        var existingUser = await FindUserByEmail(email);
         if (existingUser != null)
             return "User already exist";
 
-        var newUser = new IdentityUser
-        {
-            Email = email,
-            UserName = name
-        };
-
-        var isCreated = await _userManager.CreateAsync(newUser, password);
-        if (!isCreated.Succeeded)
+        var newUser = await CreateUser(name, email, password);
+        if (newUser == null)
             return "Failed to create the user, please try again later";
 
         var token = GenerateToken(newUser);
@@ -53,8 +49,22 @@ internal class IdentityService
         };
     }
 
+    private async Task<IdentityUser?> CreateUser(string name, string email, string password)
+    {
+        using var _ = _tracer.StartSpan(nameof(CreateUser));
+        var newUser = new IdentityUser
+        {
+            Email = email,
+            UserName = name
+        };
+
+        var isCreated = await _userManager.CreateAsync(newUser, password);
+        return isCreated.Succeeded ? newUser : null;
+    }
+
     public async Task<Result<UserLoginResponse, string>> Login(string email, string password)
     {
+        using var _ = _tracer.StartSpan(nameof(Login));
         var existingUser = await FindUserByEmail(email);
         if (existingUser == null)
             return "User not exist";
@@ -87,13 +97,14 @@ internal class IdentityService
 
     public async Task<Result<string, string>> GenerateToken(string name, string email)
     {
+        using var _ = _tracer.StartSpan(nameof(GenerateToken));
         var newUser = new IdentityUser
         {
             Email = email,
             UserName = name
         };
 
-        return Result<string,string>.Successful(GenerateToken(newUser));
+        return Result<string, string>.Successful(GenerateToken(newUser));
     }
 
     private string GenerateToken(IdentityUser user)

@@ -20,6 +20,7 @@ public class ApplicationContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationContext).Assembly);
     }
 
+    //TODO
     public async Task<bool> GetIsUserFollowingServer(string userId, string serverId)
     {
         var queryString = $"SELECT dbo.GetIsUserFollowing('{userId}', '{serverId}') AS Value";

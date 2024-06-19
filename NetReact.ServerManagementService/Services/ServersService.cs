@@ -2,64 +2,78 @@
 using Models;
 using NetReact.ServerManagementService.Caching;
 using NetReact.ServerManagementService.Repositories;
+using OpenTelemetry.Trace;
 
 namespace NetReact.ServerManagementService.Services;
 
 internal class ServersService : IServersService
 {
-    private IServersRepository ServersRepository { get; }
-    private ICacheService CacheService { get; }
+    private readonly Tracer _tracer;
+    private readonly IServersRepository _serversRepository;
+    private readonly ICacheService _cacheService;
 
     public ServersService(
+        Tracer tracer,
         IServersRepository serversRepository,
         ICacheService cacheService)
     {
-        ServersRepository = serversRepository;
-        CacheService = cacheService;
+        ArgumentNullException.ThrowIfNull(tracer);
+        ArgumentNullException.ThrowIfNull(serversRepository);
+        ArgumentNullException.ThrowIfNull(cacheService);
+
+        _tracer = tracer;
+        _serversRepository = serversRepository;
+        _cacheService = cacheService;
     }
-    
+
     public async Task<string> CreateServer(string name)
     {
-        var id = await ServersRepository.Add(new ServerDetails { Name = name });
-        await ServersRepository.Save();
+        using var _ = _tracer.StartSpan(nameof(CreateServer));
+        var id = await _serversRepository.Add(new ServerDetails { Name = name });
+        await _serversRepository.Save();
         return id;
     }
 
     public async Task<IEnumerable<ServerDetails>> GetAllServers()
     {
-        var cacheData = await CacheService.GetData<IEnumerable<ServerDetails>>(nameof(GetAllServers));
+        using var _ = _tracer.StartSpan(nameof(GetAllServers));
+        var cacheData = await _cacheService.GetData<IEnumerable<ServerDetails>>(nameof(GetAllServers));
         if (cacheData != null)
             return cacheData;
 
         var expirationTime = DateTimeOffset.Now.AddMinutes(5.0);
 
-        cacheData = await ServersRepository.Get();
-        await CacheService.SetData(nameof(GetAllServers), cacheData, expirationTime);
+        cacheData = await _serversRepository.Get();
+        await _cacheService.SetData(nameof(GetAllServers), cacheData, expirationTime);
 
         return cacheData;
     }
 
     public async Task<IEnumerable<ServerDetails>> GetFollowedServers(string userId)
     {
-        var cacheData = await CacheService.GetData<IEnumerable<ServerDetails>>($"{nameof(GetFollowedServers)}{userId}");
+        using var _ = _tracer.StartSpan(nameof(GetFollowedServers));
+        var cacheData =
+            await _cacheService.GetData<IEnumerable<ServerDetails>>($"{nameof(GetFollowedServers)}{userId}");
         if (cacheData != null)
             return cacheData;
 
         var expirationTime = DateTimeOffset.Now.AddMinutes(5.0);
 
-        cacheData = await ServersRepository.GetByUserId(userId);
-        await CacheService.SetData(nameof(GetFollowedServers), cacheData, expirationTime);
+        cacheData = await _serversRepository.GetByUserId(userId);
+        await _cacheService.SetData(nameof(GetFollowedServers), cacheData, expirationTime);
 
         return cacheData;
     }
 
     public async Task<ServerDetails> GetServer([FromQuery] string id)
     {
-        return await ServersRepository.GetById(id);
+        using var _ = _tracer.StartSpan(nameof(GetServer));
+        return await _serversRepository.GetById(id);
     }
-    
+
     public async Task<bool> GetIsFollowing(string userId, string serverId)
     {
-        return await ServersRepository.GetIsUserFollowingServer(userId, serverId);
+        using var _ = _tracer.StartSpan(nameof(GetIsFollowing));
+        return await _serversRepository.GetIsUserFollowingServer(userId, serverId);
     }
 }
