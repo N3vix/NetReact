@@ -1,18 +1,18 @@
-﻿using Models;
-using MongoDB.Driver;
+﻿using Microsoft.EntityFrameworkCore;
+using Models;
 using NetReact.ChannelManagementService.DB;
 
 namespace NetReact.ChannelManagementService.Repositories;
 
 public class ChannelsRepository : IChannelsRepository
 {
-    private readonly IMongoDbContext _mongoDbContext;
+    private readonly ApplicationContext _dbContext;
 
-    public ChannelsRepository(IMongoDbContext mongoDbContext)
+    public ChannelsRepository(ApplicationContext dbContext)
     {
-        ArgumentNullException.ThrowIfNull(mongoDbContext);
+        ArgumentNullException.ThrowIfNull(dbContext);
 
-        _mongoDbContext = mongoDbContext;
+        _dbContext = dbContext;
     }
 
     public async Task<string> Add(ChannelDetails channelDetails)
@@ -21,7 +21,7 @@ public class ChannelsRepository : IChannelsRepository
 
         channelDetails.Id = Guid.NewGuid().ToString();
 
-        await _mongoDbContext.Channels.InsertOneAsync(channelDetails);
+        await _dbContext.Channels.AddAsync(channelDetails);
 
         return channelDetails.Id;
     }
@@ -30,47 +30,35 @@ public class ChannelsRepository : IChannelsRepository
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
 
-        var filter = GetIdFilter(id);
-        var channel = await _mongoDbContext.Channels.Find(filter).FirstOrDefaultAsync();
-
-        return channel;
+        return await _dbContext.Channels.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<IEnumerable<ChannelDetails>> GetByServerId(string serverId)
     {
         ArgumentException.ThrowIfNullOrEmpty(serverId);
 
-        var filter = Builders<ChannelDetails>.Filter.Eq(x => x.ServerId, serverId);
-        var channels = await _mongoDbContext.Channels.Find(filter).ToListAsync();
-
-        return channels;
+        return await _dbContext.Channels.AsNoTracking().Where(x => x.ServerId == serverId).ToArrayAsync();
     }
 
-    public async Task<bool> Edit(string id, ChannelDetails channelDetails)
+    public async Task Edit(string id, Action<ChannelDetails> editor)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
-        ArgumentNullException.ThrowIfNull(channelDetails);
+        ArgumentNullException.ThrowIfNull(editor);
 
-        var filter = GetIdFilter(id);
-        var update = Builders<ChannelDetails>.Update
-            .Set(x => x.Name, channelDetails.Name)
-            .Set(x => x.Type, channelDetails.Type);
-
-        var result = await _mongoDbContext.Channels.UpdateOneAsync(filter, update);
-
-        return result.ModifiedCount == 1;
+        var server = await _dbContext.Channels.FindAsync(id);
+        if (server == null) return;
+        editor(server);
     }
 
-    public async Task<bool> Delete(string id)
+    public async Task Delete(string id)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
 
-        var filter = GetIdFilter(id);
-        var result = await _mongoDbContext.Channels.DeleteOneAsync(filter);
-
-        return result.DeletedCount == 1;
+        var server = await _dbContext.Channels.FindAsync(id);
+        if (server == null) return;
+        _dbContext.Channels.Remove(server);
     }
 
-    private FilterDefinition<ChannelDetails> GetIdFilter(string id)
-        => Builders<ChannelDetails>.Filter.Eq(x => x.Id, id);
+    public async Task Save()
+        => await _dbContext.SaveChangesAsync();
 }

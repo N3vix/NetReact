@@ -52,12 +52,15 @@ services:
     networks:
       - localNetwork
 
-  mongoChannels:
-    image: mongo
+  mssqlChannels:
+    image: mcr.microsoft.com/mssql/server
     ports:
-      - '27020:27017'
+      - 27020:1433
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "_Aa12345678"
     volumes:
-      - dbchannels:/data/db
+      - dbchannels:/var/opt/mssql
     networks:
       - localNetwork
 
@@ -125,9 +128,10 @@ services:
       - '7156:8080'
     environment:
       - Connections__ServersService=http://netReact-ServerManagement:8080
-      - Connections__Database=mongodb://mongoChannels:27017/
+      - "Connections__Database=Server=mssqlChannels,1433;Database=db;User=sa;Password=_Aa12345678;TrustServerCertificate=True"
+      - Connections__OTEL_EXPORTER_OTLP_ENDPOINT=http://jaegerTracing:4317
     depends_on:
-      - mongoChannels
+      - mssqlChannels
     networks:
       - localNetwork
 

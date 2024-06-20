@@ -10,8 +10,8 @@ public class ChannelDetails
 
 public enum ChannelType
 {
-    Text,
-    Voice
+    Text = 0,
+    Voice = 1
 }
 
 

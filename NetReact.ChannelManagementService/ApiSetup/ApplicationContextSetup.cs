@@ -1,4 +1,5 @@
-﻿using NetReact.ChannelManagementService.DB;
+﻿using Microsoft.EntityFrameworkCore;
+using NetReact.ChannelManagementService.DB;
 using NetReact.ChannelManagementService.Repositories;
 
 namespace NetReact.ChannelManagementService.ApiSetup;
@@ -10,8 +11,13 @@ internal static class ApplicationContextSetup
         var connections = new Connections();
         config.GetSection(nameof(Connections)).Bind(connections);
 
-        services.AddSingleton<IMongoDbContext, MongoDbContext>(_ => new MongoDbContext(connections.Database));
+        services.AddDbContext<ApplicationContext>(options => ConfigureApplicationContextOptions(options, connections));
 
         services.AddScoped<IChannelsRepository, ChannelsRepository>();
     }
+
+    private static void ConfigureApplicationContextOptions(
+        DbContextOptionsBuilder options,
+        Connections connections)
+        => options.UseSqlServer(connections.Database);
 }

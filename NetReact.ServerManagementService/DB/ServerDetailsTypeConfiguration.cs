@@ -14,7 +14,6 @@ public class ServerDetailsTypeConfiguration : IEntityTypeConfiguration<ServerDet
             .IsRequired();
 
         builder.Property<string>(x => x.Name)
-            .IsRequired()
             .HasColumnType("nvarchar(100)")
             .HasColumnOrder(2)
             .IsRequired();
