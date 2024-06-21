@@ -64,14 +64,26 @@ services:
     networks:
       - localNetwork
 
-  mongoMessages:
-    image: mongo
+  mssqlMessages:
+    image: mcr.microsoft.com/mssql/server
     ports:
-      - '27021:27017'
+      - 27021:1433
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "_Aa12345678"
     volumes:
-      - dbmessages:/data/db
+      - dbmessages:/var/opt/mssql
     networks:
       - localNetwork
+
+#  mongoMessages:
+#    image: mongo
+#    ports:
+#      - '27021:27017'
+#    volumes:
+#      - dbmessages:/data/db
+#    networks:
+#      - localNetwork
 
   netreact-signaling:
     image: netreact-signaling
@@ -145,14 +157,14 @@ services:
       - '7157:8080'
     environment:
       - Connections__ChannelsService=http://netReact-ChannelManagement:8080
-      - Connections__Database=mongodb://mongoMessages:27017/
+      - "Connections__Database=Server=mssqlMessages,1433;Database=db;User=sa;Password=_Aa12345678;TrustServerCertificate=True"
       - MessageBrokerConnection__HostName=messageBrokerMessaging
       - MessageBrokerConnection__Port=5672
       - MessageBrokerConnection__UserName=root
       - MessageBrokerConnection__Password=password
       - ASPNETCORE_DBIMAGES=DBIMAGES
     depends_on:
-      - mongoMessages
+      - mssqlMessages
       - netReact-ChannelManagement
       - messageBrokerMessaging
     networks:
@@ -165,12 +177,13 @@ services:
       context: .
       dockerfile: ./NetReact.MessagingWorker/Dockerfile
     environment:
-      - Connections__Database=mongodb://mongoMessages:27017/
+      - "Connections__Database=Server=mssqlMessages,1433;Database=db;User=sa;Password=_Aa12345678;TrustServerCertificate=True"
       - MessageBrokerConnection__HostName=messageBrokerMessaging
       - MessageBrokerConnection__Port=5672
       - MessageBrokerConnection__UserName=root
       - MessageBrokerConnection__Password=password
     depends_on:
+      - mssqlMessages
       - messageBrokerMessaging
     networks:
       - localNetwork
