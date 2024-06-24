@@ -54,7 +54,7 @@ internal class ChannelsService : IChannelsService
         using var _ = _tracer.StartSpan(nameof(GetChannels));
         var isFollowing = await IsFollowing(serverId);
         if (isFollowing.IsError)
-            return Result<IEnumerable<ChannelDetails>, string>.Failed(isFollowing.Error);
+            return isFollowing.Error;
 
         var channels = await _channelsRepository.GetByServerId(serverId);
 
@@ -65,6 +65,8 @@ internal class ChannelsService : IChannelsService
     {
         using var _ = _tracer.StartSpan(nameof(GetChannel));
         var channel = await _channelsRepository.GetById(id);
+        if (channel == null) 
+            return "Channel not found.";
 
         return Result<ChannelDetails, string>.Successful(channel);
     }
@@ -73,7 +75,8 @@ internal class ChannelsService : IChannelsService
     {
         using var _ = _tracer.StartSpan(nameof(GetIsFollowing));
         var channelDetails = await GetChannel(channelId);
-        if (channelDetails == null) return "Channel not found.";
+        if (channelDetails.IsError) 
+            return "Channel not found.";
 
         var isFollowing = await IsFollowing(channelDetails.Value.ServerId);
         if (isFollowing.IsError)

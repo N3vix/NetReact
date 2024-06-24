@@ -76,15 +76,6 @@ services:
     networks:
       - localNetwork
 
-#  mongoMessages:
-#    image: mongo
-#    ports:
-#      - '27021:27017'
-#    volumes:
-#      - dbmessages:/data/db
-#    networks:
-#      - localNetwork
-
   netreact-signaling:
     image: netreact-signaling
     build:
@@ -163,6 +154,7 @@ services:
       - MessageBrokerConnection__UserName=root
       - MessageBrokerConnection__Password=password
       - ASPNETCORE_DBIMAGES=DBIMAGES
+      - Connections__OTEL_EXPORTER_OTLP_ENDPOINT=http://jaegerTracing:4317
     depends_on:
       - mssqlMessages
       - netReact-ChannelManagement
@@ -182,6 +174,7 @@ services:
       - MessageBrokerConnection__Port=5672
       - MessageBrokerConnection__UserName=root
       - MessageBrokerConnection__Password=password
+      - Connections__OTEL_EXPORTER_OTLP_ENDPOINT=http://jaegerTracing:4317
     depends_on:
       - mssqlMessages
       - messageBrokerMessaging

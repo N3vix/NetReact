@@ -1,27 +1,27 @@
-﻿using Models;
-using MongoDB.Driver;
+﻿using Microsoft.EntityFrameworkCore;
+using Models;
 using NetReact.MessagingWorker.DB;
 
 namespace NetReact.MessagingWorker.Repositories;
 
 public class MessagesRepository : IMessagesRepository
 {
-    private readonly IMongoDbContext _mongoDbContext;
+    private readonly ApplicationContext _dbContext;
 
-    public MessagesRepository(IMongoDbContext mongoDbContext)
+    public MessagesRepository(ApplicationContext dbContext)
     {
-        ArgumentNullException.ThrowIfNull(mongoDbContext);
+        ArgumentNullException.ThrowIfNull(dbContext);
 
-        _mongoDbContext = mongoDbContext;
+        _dbContext = dbContext;
     }
 
     public async Task<string> Add(ChannelMessage message)
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        message.Id = Guid.NewGuid().ToString();
+        message.Id = Ulid.NewUlid().ToString();
 
-        await _mongoDbContext.Messages.InsertOneAsync(message);
+        await _dbContext.Messages.AddAsync(message);
 
         return message.Id;
     }
@@ -30,51 +30,43 @@ public class MessagesRepository : IMessagesRepository
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
 
-        var filter = GetIdFilter(id);
-        var message = await _mongoDbContext.Messages.Find(filter).FirstOrDefaultAsync();
-
-        return message;
+        return await _dbContext.Messages.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<IEnumerable<ChannelMessage>> Get(string channelId, int take, DateTime? from = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(channelId);
 
-        var filter = Builders<ChannelMessage>.Filter.Eq(x => x.ChannelId, channelId);
-        if(from != null) filter &= Builders<ChannelMessage>.Filter.Lt(x => x.Timestamp, from);
-        var messages = await _mongoDbContext.Messages
-            .Find(filter)
-            .Limit(take)
-            .SortByDescending(x => x.Timestamp).ToListAsync();
-
-        return messages.OrderBy(x => x.Timestamp);
+        var messages = _dbContext.Messages.Where(x => x.ChannelId == channelId);
+        if (from != null)
+            messages = messages.Where(x => x.Timestamp < from);
+        return await messages
+            .OrderByDescending(x => x.Timestamp)
+            .Take(take)
+            .ToArrayAsync();
     }
 
-    public async Task<bool> Edit(string id, ChannelMessage message)
+    public async Task<bool> Edit(string id, Action<ChannelMessage> editor)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
-        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(editor);
 
-        var filter = GetIdFilter(id);
-        var update = Builders<ChannelMessage>.Update
-            .Set(x => x.Content, message.Content)
-            .Set(x => x.EditedTimestamp, message.EditedTimestamp);
-
-        var result = await _mongoDbContext.Messages.UpdateOneAsync(filter, update);
-
-        return result.ModifiedCount == 1;
+        var server = await _dbContext.Messages.FindAsync(id);
+        if (server == null) return false;
+        editor(server);
+        return true;
     }
 
     public async Task<bool> Delete(string id)
     {
         ArgumentException.ThrowIfNullOrEmpty(id);
 
-        var filter = GetIdFilter(id);
-        var result = await _mongoDbContext.Messages.DeleteOneAsync(filter);
-
-        return result.DeletedCount == 1;
+        var server = await _dbContext.Messages.FindAsync(id);
+        if (server == null) return false;
+        _dbContext.Messages.Remove(server);
+        return true;
     }
 
-    private FilterDefinition<ChannelMessage> GetIdFilter(string id)
-        => Builders<ChannelMessage>.Filter.Eq(x => x.Id, id);
+    public async Task Save()
+        => await _dbContext.SaveChangesAsync();
 }

@@ -3,11 +3,13 @@ using Models;
 using NetReact.MessageBroker;
 using NetReact.MessageBroker.SharedModels;
 using NetReact.MessagingService.Repositories;
+using OpenTelemetry.Trace;
 
 namespace NetReact.MessagingService.Services;
 
 public class MessagesService : IMessagesService, IDisposable
 {
+    private readonly Tracer _tracer;
     private readonly ILogger<MessagesService> _logger;
     private readonly IMessagesRepository _messagesRepository;
     private readonly IMessageMediaService _messageMediaService;
@@ -18,6 +20,7 @@ public class MessagesService : IMessagesService, IDisposable
     private readonly IMessageBrokerProducer _deleteMessageCommandProducer;
 
     public MessagesService(
+        Tracer tracer,
         ILogger<MessagesService> logger,
         IOptionsSnapshot<MessageBrokerChannelConnectionConfig> options,
         IMessagesRepository messagesRepository,
@@ -32,6 +35,7 @@ public class MessagesService : IMessagesService, IDisposable
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(messageProducer);
 
+        _tracer = tracer;
         _logger = logger;
         _messagesRepository = messagesRepository;
         _messageMediaService = messageMediaService;
@@ -46,6 +50,7 @@ public class MessagesService : IMessagesService, IDisposable
 
     public async Task<Result<string>> Add(string senderId, string channelId, string content, byte[]? image)
     {
+        using var _ = _tracer.StartSpan(nameof(Add));
         var isFollowing = await IsFollowing(senderId, channelId);
         if (isFollowing.IsError)
             return isFollowing.Error;
@@ -66,6 +71,7 @@ public class MessagesService : IMessagesService, IDisposable
 
     public async Task<Result<ChannelMessage, string>> Get(string userId, string channelId, string messageId)
     {
+        using var _ = _tracer.StartSpan(nameof(Get));
         var isFollowing = await IsFollowing(userId, channelId);
         if (isFollowing.IsError)
             return isFollowing.Error;
@@ -79,6 +85,7 @@ public class MessagesService : IMessagesService, IDisposable
         int take,
         DateTime? from = null)
     {
+        using var _ = _tracer.StartSpan(nameof(Get));
         var isFollowing = await IsFollowing(userId, channelId);
         if (isFollowing.IsError)
             return isFollowing.Error;
@@ -93,6 +100,7 @@ public class MessagesService : IMessagesService, IDisposable
         string messageId,
         string newContent)
     {
+        using var _ = _tracer.StartSpan(nameof(Update));
         var messageResult = await Get(userId, channelId, messageId);
         if (messageResult.IsError) return messageResult.Error;
 
@@ -112,6 +120,7 @@ public class MessagesService : IMessagesService, IDisposable
 
     public async Task<Result<string>> Delete(string userId, string channelId, string messageId)
     {
+        using var _ = _tracer.StartSpan(nameof(Delete));
         var messageResult = await Get(userId, channelId, messageId);
         if (messageResult.IsError) return messageResult.Error;
 
@@ -130,6 +139,7 @@ public class MessagesService : IMessagesService, IDisposable
 
     private async Task<Result<bool, string>> IsFollowing(string userId, string channelId)
     {
+        using var _ = _tracer.StartSpan(nameof(IsFollowing));
         var response = await _httpClient.GetIsFollowingServer(userId, channelId);
         if (!response.IsSuccessStatusCode)
             return "Channel management service failed.";

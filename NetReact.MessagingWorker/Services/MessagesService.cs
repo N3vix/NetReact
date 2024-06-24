@@ -22,12 +22,14 @@ public class MessagesService : IMessagesService
         {
             ChannelId = channelId,
             SenderId = senderId,
-            Timestamp = DateTime.UtcNow,
             Content = content,
             Image = image
         };
 
-        return await MessagesRepository.Add(channelMessage);
+        var messageId = await MessagesRepository.Add(channelMessage);
+        await MessagesRepository.Save();
+        
+        return messageId;
     }
 
     public async Task<ChannelMessage> Get(string messageId)
@@ -45,11 +47,21 @@ public class MessagesService : IMessagesService
         var message = await Get(messageId);
         message.Content = newContent;
         message.EditedTimestamp = DateTime.UtcNow;
-        return await MessagesRepository.Edit(messageId, message);
+        var result = await MessagesRepository.Edit(messageId, channelMessage =>
+        {
+            channelMessage.Content = newContent;
+            channelMessage.EditedTimestamp = DateTime.Now;
+        });
+        if (result)
+            await MessagesRepository.Save();
+        return result;
     }
 
     public async Task<bool> Delete(string messageId)
     {
-        return await MessagesRepository.Delete(messageId);
+        var result = await MessagesRepository.Delete(messageId);
+        if (result)
+            await MessagesRepository.Save();
+        return result;
     }
 }

@@ -1,4 +1,5 @@
-﻿using NetReact.MessagingWorker.DB;
+﻿using Microsoft.EntityFrameworkCore;
+using NetReact.MessagingWorker.DB;
 using NetReact.MessagingWorker.Repositories;
 
 namespace NetReact.MessagingWorker.ApiSetup;
@@ -9,9 +10,14 @@ internal static class ApplicationContextSetup
     {
         var connections = new Connections();
         config.GetSection(nameof(Connections)).Bind(connections);
-        
-        services.AddSingleton<IMongoDbContext, MongoDbContext>(_ => new MongoDbContext(connections.Database));
+
+        services.AddDbContext<ApplicationContext>(options => ConfigureApplicationContextOptions(options, connections));
         
         services.AddScoped<IMessagesRepository, MessagesRepository>();
-    }
+    }    
+    
+    private static void ConfigureApplicationContextOptions(
+        DbContextOptionsBuilder options,
+        Connections connections)
+        => options.UseSqlServer(connections.Database);
 }

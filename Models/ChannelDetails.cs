@@ -22,6 +22,6 @@ public class ChannelMessage
     public string SenderId { get; set; }
     public DateTime Timestamp { get; set; }
     public string Content { get; set; }
-    public string Image { get; set; }
+    public string? Image { get; set; }
     public DateTime? EditedTimestamp { get; set; }
 }
