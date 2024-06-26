@@ -4,5 +4,5 @@ namespace NetReact.MessageBroker;
 
 public interface IMessageBrokerConsumerFactory
 {
-    IMessageBrokerConsumer Build(MessageBrokerChannelConnectionConfig channelConnectionConfig);
+    IMessageBrokerConsumer Build(IMessageConsumerHandler consumerHandler);
 }

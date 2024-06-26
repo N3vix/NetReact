@@ -49,7 +49,7 @@ internal abstract class MessageBroker : IDisposable
         }
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         Channel.Dispose();
     }

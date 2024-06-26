@@ -1,24 +1,50 @@
-﻿using System.Diagnostics;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text;
 using Microsoft.Extensions.Options;
 using NetReact.MessageBroker;
 using NetReact.MessageBroker.SharedModels;
-using OpenTelemetry;
-using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Trace;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 
 namespace NetReact.MessagingWorker.Services;
 
+public class CreateChannelMessageConsumer : MessageConsumerHandlerBase<CreateChannelMessageCommand>
+{
+    private readonly IMessagesService _messagesService;
+    private readonly IMessageBrokerProducer _createdMessageEventProducer;
+
+    public CreateChannelMessageConsumer(
+        IMessagesService messagesService,
+        IOptionsSnapshot<MessageBrokerChannelConnectionConfig> options,
+        IMessageBrokerProducerFactory producerFactory)
+    {
+        _messagesService = messagesService;
+
+        Config = options.Get("MessageCreateCommand");
+
+        var messageCreatedCommandConfig = options.Get("MessageCreatedCommand");
+        _createdMessageEventProducer = producerFactory.Build(messageCreatedCommandConfig);
+    }
+
+    public override async Task Handle(CreateChannelMessageCommand message)
+    {
+        var messageId = await _messagesService.Add(message.SenderId, message.ChannelId, message.Content, message.Image);
+
+        var messageCreatedCommand = new ChannelMessageCreated
+        {
+            ChannelId = message.ChannelId,
+            MessageId = messageId
+        };
+        _createdMessageEventProducer.SendMessage(messageCreatedCommand);
+    }
+}
+
 public class MessagingWorkerService : BackgroundService
+
 {
     private readonly Tracer _tracer;
     private readonly IServiceScopeFactory _factory;
-    private readonly IMessageBrokerConsumer _createMessageCommandConsumer;
-    private readonly IMessageBrokerConsumer _editMessageCommandConsumer;
-    private readonly IMessageBrokerConsumer _deleteMessageCommandConsumer;
+    private readonly IMessageBrokerConsumer<CreateChannelMessageCommand> _createMessageCommandConsumer;
+    private readonly IMessageBrokerConsumer<EditChannelMessageCommand> _editMessageCommandConsumer;
+    private readonly IMessageBrokerConsumer<DeleteChannelMessageCommand> _deleteMessageCommandConsumer;
 
     private readonly IMessageBrokerProducer _createdMessageEventProducer;
     private readonly IMessageBrokerProducer _editedMessageEventProducer;
@@ -40,11 +66,11 @@ public class MessagingWorkerService : BackgroundService
         _factory = factory;
 
         var messageCreateCommandConfig = options.Get("MessageCreateCommand");
-        _createMessageCommandConsumer = consumerFactory.Build(messageCreateCommandConfig);
+        _createMessageCommandConsumer = consumerFactory.Build<CreateChannelMessageCommand>(messageCreateCommandConfig);
         var messageEditCommandConfig = options.Get("MessageEditCommand");
-        _editMessageCommandConsumer = consumerFactory.Build(messageEditCommandConfig);
+        _editMessageCommandConsumer = consumerFactory.Build<EditChannelMessageCommand>(messageEditCommandConfig);
         var messageDeleteCommandConfig = options.Get("MessageDeleteCommand");
-        _deleteMessageCommandConsumer = consumerFactory.Build(messageDeleteCommandConfig);
+        _deleteMessageCommandConsumer = consumerFactory.Build<DeleteChannelMessageCommand>(messageDeleteCommandConfig);
 
         var messageCreatedCommandConfig = options.Get("MessageCreatedCommand");
         _createdMessageEventProducer = producerFactory.Build(messageCreatedCommandConfig);
@@ -57,25 +83,17 @@ public class MessagingWorkerService : BackgroundService
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _createMessageCommandConsumer.AddListener(CreateMessage);
-        _editMessageCommandConsumer.AddListener(EditMessage);
-        _deleteMessageCommandConsumer.AddListener(DeleteMessage);
+        _createMessageCommandConsumer.MessageReceived += CreateMessage;
+        _editMessageCommandConsumer.MessageReceived += EditMessage;
+        _deleteMessageCommandConsumer.MessageReceived += DeleteMessage;
 
         return Task.CompletedTask;
     }
 
-    private async void CreateMessage(object? @object, BasicDeliverEventArgs args)
+    private async void CreateMessage(CreateChannelMessageCommand command)
     {
-        var parentContext = Propagators.DefaultTextMapPropagator.Extract(
-            default, 
-            args.BasicProperties,
-            ExtractTraceContextFromBasicProperties);
-        Baggage.Current = parentContext.Baggage;
-        using var _ = _tracer.StartSpan(nameof(CreateMessage), SpanKind.Consumer, new SpanContext(parentContext.ActivityContext));
-
         using var scope = _factory.CreateScope();
         var messagesService = scope.ServiceProvider.GetRequiredService<IMessagesService>();
-        var command = GetCommand<CreateChannelMessageCommand>(args);
         var messageId = await messagesService.Add(command.SenderId, command.ChannelId, command.Content, command.Image);
 
         var messageCreatedCommand = new ChannelMessageCreated
@@ -86,11 +104,10 @@ public class MessagingWorkerService : BackgroundService
         _createdMessageEventProducer.SendMessage(messageCreatedCommand);
     }
 
-    private async void EditMessage(object? @object, BasicDeliverEventArgs args)
+    private async void EditMessage(EditChannelMessageCommand command)
     {
         using var scope = _factory.CreateScope();
         var messagesService = scope.ServiceProvider.GetRequiredService<IMessagesService>();
-        var command = GetCommand<EditChannelMessageCommand>(args);
         var isUpdated = await messagesService.Update(command.MessageId, command.NewContent);
         if (!isUpdated) return;
 
@@ -98,11 +115,10 @@ public class MessagingWorkerService : BackgroundService
         _editedMessageEventProducer.SendMessage(messageEditedCommand);
     }
 
-    private async void DeleteMessage(object? @object, BasicDeliverEventArgs args)
+    private async void DeleteMessage(DeleteChannelMessageCommand command)
     {
         using var scope = _factory.CreateScope();
         var messagesService = scope.ServiceProvider.GetRequiredService<IMessagesService>();
-        var command = GetCommand<DeleteChannelMessageCommand>(args);
         var isDeleted = await messagesService.Delete(command.MessageId);
         if (!isDeleted) return;
 
@@ -110,36 +126,11 @@ public class MessagingWorkerService : BackgroundService
         _deletedMessageEventProducer.SendMessage(messageEditedCommand);
     }
 
-    private T GetCommand<T>(BasicDeliverEventArgs args)
-    {
-        var body = args.Body.ToArray();
-        var messageJson = Encoding.UTF8.GetString(body);
-        return JsonSerializer.Deserialize<T>(messageJson)!;
-    }    
-    
-    private IEnumerable<string> ExtractTraceContextFromBasicProperties(IBasicProperties props, string key)
-    {
-        try
-        {
-            if (props.Headers.TryGetValue(key, out var value))
-            {
-                var bytes = value as byte[];
-                return new[] { Encoding.UTF8.GetString(bytes) };
-            }
-        }
-        catch (Exception ex)
-        {
-            // logger.LogError(ex, "Failed to extract trace context.");
-        }
-
-        return Enumerable.Empty<string>();
-    }
-
     public override void Dispose()
     {
-        _createMessageCommandConsumer.RemoveListener(CreateMessage);
-        _editMessageCommandConsumer.RemoveListener(EditMessage);
-        _deleteMessageCommandConsumer.RemoveListener(DeleteMessage);
+        _createMessageCommandConsumer.MessageReceived -= CreateMessage;
+        _editMessageCommandConsumer.MessageReceived -= EditMessage;
+        _deleteMessageCommandConsumer.MessageReceived -= DeleteMessage;
 
         _createMessageCommandConsumer.Dispose();
         _editMessageCommandConsumer.Dispose();
