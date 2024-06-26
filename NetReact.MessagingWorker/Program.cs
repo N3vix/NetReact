@@ -1,10 +1,13 @@
 using NetReact.MessageBroker;
 using NetReact.MessagingWorker.ApiSetup;
 using NetReact.MessagingWorker.Services;
+using NetReact.ServiceSetup;
 
 var builder = Host.CreateApplicationBuilder(args);
 var services = builder.Services;
 var config = builder.Configuration;
+
+builder.SetupOpenTelemetry();
 
 services.SetupConfigs(config);
 services.AddSingleton<MessageBrokerConnection>();

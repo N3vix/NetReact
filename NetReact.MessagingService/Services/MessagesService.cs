@@ -64,6 +64,7 @@ public class MessagesService : IMessagesService, IDisposable
             Content = content,
             Image = imageName
         };
+        
         _createMessageCommandProducer.SendMessage(messageCreated);
 
         return Result<string>.Successful();

@@ -40,7 +40,8 @@ public class MessageBrokerConnection : IDisposable
             Port = _connectionConfig.Port,
             UserName = _connectionConfig.UserName,
             Password = _connectionConfig.Password,
-            VirtualHost = "/"
+            VirtualHost = "/",
+            RequestedConnectionTimeout = TimeSpan.FromMilliseconds(3000)
         };
     }
 

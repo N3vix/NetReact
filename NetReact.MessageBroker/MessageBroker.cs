@@ -6,7 +6,7 @@ namespace NetReact.MessageBroker;
 
 internal abstract class MessageBroker : IDisposable
 {
-    private readonly ILogger _logger;
+    protected readonly ILogger _logger;
     private readonly MessageBrokerConnection _connection;
     protected readonly MessageBrokerChannelConnectionConfig ChannelConnectionConfig;
 

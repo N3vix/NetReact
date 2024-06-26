@@ -9,6 +9,8 @@
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
+        <PackageReference Include="OpenTelemetry.Extensions.Propagators" Version="1.9.0" />
     </ItemGroup>
 
 </Project>

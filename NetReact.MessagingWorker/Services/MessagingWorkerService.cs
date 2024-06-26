@@ -1,14 +1,20 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using NetReact.MessageBroker;
 using NetReact.MessageBroker.SharedModels;
+using OpenTelemetry;
+using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Trace;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace NetReact.MessagingWorker.Services;
 
 public class MessagingWorkerService : BackgroundService
 {
+    private readonly Tracer _tracer;
     private readonly IServiceScopeFactory _factory;
     private readonly IMessageBrokerConsumer _createMessageCommandConsumer;
     private readonly IMessageBrokerConsumer _editMessageCommandConsumer;
@@ -19,6 +25,7 @@ public class MessagingWorkerService : BackgroundService
     private readonly IMessageBrokerProducer _deletedMessageEventProducer;
 
     public MessagingWorkerService(
+        Tracer tracer,
         IServiceScopeFactory factory,
         IOptionsSnapshot<MessageBrokerChannelConnectionConfig> options,
         IMessageBrokerConsumerFactory consumerFactory,
@@ -29,6 +36,7 @@ public class MessagingWorkerService : BackgroundService
         ArgumentNullException.ThrowIfNull(consumerFactory);
         ArgumentNullException.ThrowIfNull(producerFactory);
 
+        _tracer = tracer;
         _factory = factory;
 
         var messageCreateCommandConfig = options.Get("MessageCreateCommand");
@@ -58,6 +66,13 @@ public class MessagingWorkerService : BackgroundService
 
     private async void CreateMessage(object? @object, BasicDeliverEventArgs args)
     {
+        var parentContext = Propagators.DefaultTextMapPropagator.Extract(
+            default, 
+            args.BasicProperties,
+            ExtractTraceContextFromBasicProperties);
+        Baggage.Current = parentContext.Baggage;
+        using var _ = _tracer.StartSpan(nameof(CreateMessage), SpanKind.Consumer, new SpanContext(parentContext.ActivityContext));
+
         using var scope = _factory.CreateScope();
         var messagesService = scope.ServiceProvider.GetRequiredService<IMessagesService>();
         var command = GetCommand<CreateChannelMessageCommand>(args);
@@ -100,6 +115,24 @@ public class MessagingWorkerService : BackgroundService
         var body = args.Body.ToArray();
         var messageJson = Encoding.UTF8.GetString(body);
         return JsonSerializer.Deserialize<T>(messageJson)!;
+    }    
+    
+    private IEnumerable<string> ExtractTraceContextFromBasicProperties(IBasicProperties props, string key)
+    {
+        try
+        {
+            if (props.Headers.TryGetValue(key, out var value))
+            {
+                var bytes = value as byte[];
+                return new[] { Encoding.UTF8.GetString(bytes) };
+            }
+        }
+        catch (Exception ex)
+        {
+            // logger.LogError(ex, "Failed to extract trace context.");
+        }
+
+        return Enumerable.Empty<string>();
     }
 
     public override void Dispose()

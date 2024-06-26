@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -10,7 +10,7 @@ namespace NetReact.ServiceSetup;
 
 public static class OpenTelemetryBuilder
 {
-    public static void SetupOpenTelemetry(this WebApplicationBuilder builder)
+    public static void SetupOpenTelemetry(this IHostApplicationBuilder builder)
     {
         var services = builder.Services;
         var logging = builder.Logging;
@@ -32,7 +32,7 @@ public static class OpenTelemetryBuilder
         options.IncludeFormattedMessage = true;
     }
 
-    private static void ConfigureMetrics(MeterProviderBuilder meterProviderBuilder, WebApplicationBuilder builder)
+    private static void ConfigureMetrics(MeterProviderBuilder meterProviderBuilder, IHostApplicationBuilder builder)
     {
         meterProviderBuilder
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName))
@@ -48,7 +48,7 @@ public static class OpenTelemetryBuilder
             });
     }
 
-    private static void ConfigureTracing(TracerProviderBuilder tracerProviderBuilder, WebApplicationBuilder builder)
+    private static void ConfigureTracing(TracerProviderBuilder tracerProviderBuilder, IHostApplicationBuilder builder)
     {
         tracerProviderBuilder
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName))
@@ -58,7 +58,7 @@ public static class OpenTelemetryBuilder
             .AddSource(builder.Environment.ApplicationName);
     }
 
-    private static void ConfigureExporters(this WebApplicationBuilder builder)
+    private static void ConfigureExporters(this IHostApplicationBuilder builder)
     {
         var endpoint = builder.Configuration["Connections:OTEL_EXPORTER_OTLP_ENDPOINT"];
 
