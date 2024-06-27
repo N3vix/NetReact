@@ -13,6 +13,9 @@ services.AddSwaggerGen();
 services.SetupConfigs(config);
 services.AddSingleton<MessageBrokerConnection>();
 services.AddScoped<IMessageBrokerConsumerFactory, MessageBrokerConsumerFactory>();
+
+services.AddScoped<IMessageConsumerHandler, ChannelMessageCreatedConsumerHandler>();
+
 services.AddHostedService<MessagingWorkerService>();
 
 services.AddSignalR();

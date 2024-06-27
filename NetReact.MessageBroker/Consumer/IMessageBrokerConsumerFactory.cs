@@ -1,6 +1,4 @@
-﻿using NetReact.MessageBroker.SharedModels;
-
-namespace NetReact.MessageBroker;
+﻿namespace NetReact.MessageBroker;
 
 public interface IMessageBrokerConsumerFactory
 {
